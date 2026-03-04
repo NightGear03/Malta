@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malta VapeStore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        .vape-bg { background: linear-gradient(135deg, #0f172a 0%, #1e2937 100%); }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+    <div class="max-w-md mx-auto bg-zinc-900 min-h-screen shadow-2xl overflow-hidden" id="app">
+
+        <!-- HEADER -->
+        <header id="header" class="bg-gradient-to-r from-teal-600 to-teal-500 p-4 flex items-center gap-3 sticky top-0 z-50">
+            <img src="https://i.imgur.com/h3D0nVP.png" alt="Malta Logo" class="w-12 h-12 rounded-2xl">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Malta VapeStore</h1>
+                <p class="text-xs text-teal-100 -mt-1">EST 2019 • Bandung</p>
+            </div>
+            <button onclick="logout()" id="logoutBtn" class="ml-auto text-white text-sm font-medium hidden">Logout</button>
+        </header>
+
+        <!-- LANDING -->
+        <div id="landing" class="p-6">
+            <div class="text-center py-12">
+                <img src="https://i.imgur.com/h3D0nVP.png" class="mx-auto w-44 mb-6">
+                <h2 class="text-4xl font-bold mb-2 text-teal-400">Selamat Datang!</h2>
+                <p class="text-zinc-400">Pilih peran kamu</p>
+            </div>
+            <div class="space-y-4">
+                <button onclick="showLogin('owner')" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-amber-400/30 p-6 rounded-3xl flex items-center gap-5">
+                    <i class="fa-solid fa-crown text-5xl text-amber-400"></i>
+                    <div class="text-left">
+                        <div class="font-semibold text-2xl">Owner</div>
+                        <div class="text-zinc-500">Rizal • 22446688</div>
+                    </div>
+                </button>
+                <button onclick="showLogin('worker')" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-blue-400/30 p-6 rounded-3xl flex items-center gap-5">
+                    <i class="fa-solid fa-user-gear text-5xl text-blue-400"></i>
+                    <div class="text-left">
+                        <div class="font-semibold text-2xl">Worker</div>
+                        <div class="text-zinc-500">Zikra • 010299</div>
+                    </div>
+                </button>
+                <button onclick="enterMember()" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-emerald-400/30 p-6 rounded-3xl flex items-center gap-5">
+                    <i class="fa-solid fa-users text-5xl text-emerald-400"></i>
+                    <div class="text-left">
+                        <div class="font-semibold text-2xl">Member</div>
+                        <div class="text-zinc-500">Lihat stok & request</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- LOGIN MODAL -->
+        <div id="loginModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+            <div class="bg-zinc-900 w-full max-w-xs mx-4 rounded-3xl p-8">
+                <h3 id="modalTitle" class="text-2xl font-bold text-center mb-8">Login Owner</h3>
+                <input id="username" placeholder="Username" class="block w-full bg-zinc-800 p-4 rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-teal-500">
+                <input id="password" type="password" placeholder="Password" class="block w-full bg-zinc-800 p-4 rounded-2xl mb-8 outline-none focus:ring-2 focus:ring-teal-500">
+                <button onclick="doLogin()" class="w-full bg-teal-600 hover:bg-teal-500 py-4 rounded-3xl font-bold text-lg">Masuk</button>
+                <button onclick="hideModal()" class="w-full mt-4 text-zinc-400">Batal</button>
+            </div>
+        </div>
+
+        <!-- MAIN APP -->
+        <div id="mainApp" class="hidden flex flex-col h-[calc(100vh-73px)]">
+            <!-- TABS -->
+            <div id="tabs" class="flex border-b border-zinc-700 bg-zinc-950 overflow-x-auto"></div>
+
+            <!-- CONTENT -->
+            <div id="content" class="flex-1 overflow-auto p-5 pb-24"></div>
+
+            <!-- BOTTOM NAV -->
+            <div id="bottomNav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-zinc-900 border-t border-zinc-700 flex text-xs"></div>
+        </div>
+    </div>
+
+    <script>
+        // ================== DATA & CONFIG ==================
+        let products = JSON.parse(localStorage.getItem('malta_products')) || [
+            {id:1, name:"Liquid Mango Blast 30ml", price:85000, stock:42},
+            {id:2, name:"Pod Vaporesso XROS 3", price:320000, stock:15},
+            {id:3, name:"Coil 0.6ohm 5pcs", price:45000, stock:68},
+            {id:4, name:"Battery 18650 3000mAh", price:165000, stock:9},
+            {id:5, name:"Liquid Strawberry Ice 60ml", price:115000, stock:27}
+        ];
+        let sales = JSON.parse(localStorage.getItem('malta_sales')) || [];
+        let attendance = JSON.parse(localStorage.getItem('malta_attendance')) || [];
+        let requestsList = JSON.parse(localStorage.getItem('malta_requests')) || [];
+
+        let currentRole = null;
+        let currentUser = null;
+        let currentChart = null;
+
+        function saveAll() {
+            localStorage.setItem('malta_products', JSON.stringify(products));
+            localStorage.setItem('malta_sales', JSON.stringify(sales));
+            localStorage.setItem('malta_attendance', JSON.stringify(attendance));
+            localStorage.setItem('malta_requests', JSON.stringify(requestsList));
+        }
+
+        function formatRupiah(n) {
+            return 'Rp ' + n.toLocaleString('id-ID');
+        }
+        function today() {
+            return new Date().toISOString().split('T')[0];
+        }
+        function nowTime() {
+            return new Date().toTimeString().slice(0,5);
+        }
+
+        // ================== LOGIN ==================
+        function showLogin(role) {
+            document.getElementById('modalTitle').textContent = role === 'owner' ? 'Login Owner' : 'Login Worker';
+            window.tempRole = role;
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+        function hideModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+        function doLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const role = window.tempRole;
+
+            if (role === 'owner' && user === 'Rizal' && pass === '22446688') {
+                currentRole = 'owner'; currentUser = 'Rizal';
+            } else if (role === 'worker' && user === 'Zikra' && pass === '010299') {
+                currentRole = 'worker'; currentUser = 'Zikra';
+            } else {
+                alert('ID atau password salah!');
+                return;
+            }
+            hideModal();
+            enterApp();
+        }
+
+        function enterMember() {
+            currentRole = 'member';
+            currentUser = 'Member';
+            enterApp();
+        }
+
+        function enterApp() {
+            document.getElementById('landing').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            buildTabs();
+            showSection(currentRole === 'member' ? 'stok' : 'dashboard');
+        }
+
+        function logout() {
+            if (confirm('Keluar dari akun?')) {
+                location.reload();
+            }
+        }
+
+        // ================== TABS & NAV ==================
+        let currentSection = '';
+
+        function buildTabs() {
+            const tabsDiv = document.getElementById('tabs');
+            const bottomDiv = document.getElementById('bottomNav');
+            tabsDiv.innerHTML = '';
+            bottomDiv.innerHTML = '';
+
+            let items = [];
+            if (currentRole === 'member') {
+                items = [
+                    {key:'stok', icon:'fa-box', label:'Stok'},
+                    {key:'request', icon:'fa-paper-plane', label:'Request'}
+                ];
+            } else {
+                items = [
+                    {key:'dashboard', icon:'fa-chart-bar', label:'Dashboard'},
+                    {key:'stok', icon:'fa-box', label:'Stok'},
+                    {key:'penjualan', icon:'fa-cart-plus', label:'Jual'},
+                    {key:'requests', icon:'fa-bell', label:'Request'},
+                    {key:'laporan', icon:'fa-file-alt', label:'Laporan'}
+                ];
+                if (currentRole === 'owner' || currentRole === 'worker') {
+                    items.splice(4, 0, {key:'absensi', icon:'fa-clock', label:'Absen'});
+                }
+            }
+
+            items.forEach(item => {
+                // top tabs
+                const tab = document.createElement('button');
+                tab.className = `flex-1 py-4 text-sm font-medium flex flex-col items-center gap-1 ${currentSection === item.key ? 'text-teal-400 border-b-4 border-teal-400' : 'text-zinc-400'}`;
+                tab.innerHTML = `<i class="fa-solid \( {item.icon} text-xl"></i><span> \){item.label}</span>`;
+                tab.onclick = () => showSection(item.key);
+                tabsDiv.appendChild(tab);
+
+                // bottom nav
+                const b = document.createElement('button');
+                b.className = `flex-1 flex flex-col items-center py-2 ${currentSection === item.key ? 'text-teal-400' : 'text-zinc-400'}`;
+                b.innerHTML = `<i class="fa-solid \( {item.icon} text-2xl"></i><span class="text-[10px]"> \){item.label}</span>`;
+                b.onclick = () => showSection(item.key);
+                bottomDiv.appendChild(b);
+            });
+        }
+
+        function showSection(section) {
+            currentSection = section;
+            buildTabs();
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+
+            if (section === 'dashboard') renderDashboard(content);
+            else if (section === 'stok') renderStok(content);
+            else if (section === 'penjualan') renderPenjualan(content);
+            else if (section === 'absensi') renderAbsensi(content);
+            else if (section === 'laporan') renderLaporan(content);
+            else if (section === 'requests' || section === 'request') renderRequests(content);
+        }
+
+        // ================== DASHBOARD ==================
+        function renderDashboard(container) {
+            const td = today();
+            const todaySales = sales.filter(s => s.date === td);
+            const total = todaySales.reduce((sum, s) => sum + s.total, 0);
+
+            const top = {};
+            todaySales.forEach(s => top[s.itemName] = (top[s.itemName]||0) + s.qty);
+            const topSorted = Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+            let html = `
+                <div class="text-center mb-10">
+                    <p class="text-zinc-400 text-sm">${td}</p>
+                    <p class="text-6xl font-bold text-teal-400 mt-1">${formatRupiah(total)}</p>
+                    <p class="text-xs text-zinc-500">PENJUALAN HARI INI</p>
+                </div>
+                <div class="bg-zinc-800 rounded-3xl p-6">
+                    <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-fire text-orange-400"></i> Paling Rame Hari Ini</h3>
+                    <canvas id="topChart" class="h-60"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <div class="bg-zinc-800 rounded-3xl p-6 text-center">
+                        <div class="text-4xl font-bold">${todaySales.length}</div>
+                        <div class="text-xs text-zinc-500">Transaksi</div>
+                    </div>
+                    <div class="bg-zinc-800 rounded-3xl p-6 text-center">
+                        <div class="text-4xl font-bold">${todaySales.reduce((a,s)=>a+s.qty,0)}</div>
+                        <div class="text-xs text-zinc-500">Barang Terjual</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+
+            setTimeout(() => {
+                if (currentChart) currentChart.destroy();
+                currentChart = new Chart(document.getElementById('topChart'), {
+                    type: 'bar',
+                    data: { labels: topSorted.map(i=>i[0].slice(0,10)), datasets: [{ label:'Terjual', data:topSorted.map(i=>i[1]), backgroundColor:'#14b8a6' }] },
+                    options: { responsive:true, plugins:{legend:{display:false}} }
+                });
+            }, 300);
+        }
+
+        // ================== STOK ==================
+        function renderStok(container) {
+            let html = `
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Daftar Stok</h2>
+                    ${currentRole === 'owner' ? `<button onclick="tambahBarang()" class="bg-teal-600 px-6 py-3 rounded-2xl text-sm font-medium">+ Barang Baru</button>` : ''}
+                </div>
+                <input id="search" onkeyup="cariStok()" placeholder="Cari nama barang..." class="w-full bg-zinc-800 border-none p-4 rounded-3xl mb-6">
+                <div id="stokContainer" class="space-y-4"></div>
+            `;
+            container.innerHTML = html;
+            renderStokItems();
+        }
+
+        function renderStokItems(filtered = products) {
+            const cont = document.getElementById('stokContainer');
+            cont.innerHTML = '';
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "bg-zinc-800 rounded-3xl p-5 flex justify-between items-center";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-medium">${p.name}</div>
+                        <div class="text-teal-400 text-sm">${formatRupiah(p.price)}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-bold text-emerald-400">${p.stock}</div>
+                        <div class="text-xs text-zinc-500">stok</div>
+                    </div>
+                    \( {currentRole === 'owner' ? `<button onclick="editStok( \){p.id})" class="ml-4 text-amber-400"><i class="fa-solid fa-pen"></i></button>` : ''}
+                `;
+                cont.appendChild(div);
+            });
+        }
+
+        function cariStok() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(term));
+            renderStokItems(filtered);
+        }
+
+        function tambahBarang() {
+            const name = prompt("Nama barang:");
+            if (!name) return;
+            const price = parseInt(prompt("Harga (tanpa titik):"));
+            const stock = parseInt(prompt("Stok awal:"));
+            const id = products.length ? Math.max(...products.map(x=>x.id)) + 1 : 1;
+            products.push({id, name, price, stock});
+            saveAll();
+            renderStokItems();
+        }
+
+        function editStok(id) {
+            const p = products.find(x => x.id === id);
+            const newStock = parseInt(prompt(`Stok baru untuk ${p.name} (sekarang ${p.stock}):`, p.stock));
+            if (!isNaN(newStock)) {
+                p.stock = newStock;
+                saveAll();
+                renderStokItems();
+            }
+        }
+
+        // ================== PENJUALAN ==================
+        function renderPenjualan(container) {
+            let html = `<h2 class="text-2xl font-bold mb-6">Catat Penjualan</h2><div id="jualList" class="space-y-6"></div>`;
+            container.innerHTML = html;
+            const list = document.getElementById('jualList');
+            products.forEach(p => {
+                const d = document.createElement('div');
+                d.className = "bg-zinc-800 rounded-3xl p-5";
+                d.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-medium">${p.name}</div>
+                            <div class="text-teal-400">${formatRupiah(p.price)}</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input id="qty${p.id}" type="number" value="1" min="1" class="w-20 bg-zinc-700 text-center p-3 rounded-2xl">
+                            <button onclick="jual(${p.id})" class="bg-emerald-600 px-7 py-3 rounded-2xl font-medium">JUAL</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(d);
+            });
+        }
+
+        function jual(id) {
+            const qty = parseInt(document.getElementById('qty' + id).value);
+            if (!qty) return;
+            const p = products.find(x => x.id === id);
+            if (p.stock < qty) return alert("Stok tidak cukup!");
+            p.stock -= qty;
+            const total = p.price * qty;
+            sales.push({
+                date: today(),
+                time: nowTime(),
+                itemName: p.name,
+                qty: qty,
+                total: total,
+                worker: currentUser
+            });
+            saveAll();
+            alert(`✅ ${qty} ${p.name} tercatat!`);
+            showSection('penjualan');
+            if (currentSection === 'dashboard') showSection('dashboard');
+        }
+
+        // ================== ABSENSI ==================
+        function renderAbsensi(container) {
+            const td = today();
+            const myAtt = attendance.find(a => a.date === td && a.worker === currentUser);
+            let status = myAtt ? (myAtt.timeOut ? 'Sudah pulang' : `Masuk pukul ${myAtt.timeIn}`) : 'Belum absen';
+
+            let html = `
+                <h2 class="text-2xl font-bold mb-8">Absensi ${currentUser}</h2>
+                <div class="bg-zinc-800 rounded-3xl p-10 text-center mb-10">
+                    <p class="text-sm text-zinc-400">Hari ini</p>
+                    <p class="text-3xl font-bold mt-3">${status}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="checkIn()" class="py-8 bg-emerald-600 rounded-3xl text-xl font-bold ${myAtt && myAtt.timeIn ? 'opacity-50' : ''}">CHECK IN</button>
+                    <button onclick="checkOut()" class="py-8 bg-orange-600 rounded-3xl text-xl font-bold ${!myAtt || myAtt.timeOut ? 'opacity-50' : ''}">CHECK OUT</button>
+                </div>
+                <div class="mt-12">
+                    <h3 class="font-medium mb-4">Riwayat Absensi</h3>
+                    <div id="attHistory" class="space-y-3"></div>
+                </div>
+            `;
+            container.innerHTML = html;
+            renderAttHistory();
+        }
+
+        function checkIn() {
+            const td = today();
+            if (attendance.some(a => a.date === td && a.worker === currentUser)) return alert("Sudah check-in hari ini!");
+            attendance.push({date: td, worker: currentUser, timeIn: nowTime(), timeOut: null});
+            saveAll();
+            alert("✅ Check-in berhasil!");
+            showSection('absensi');
+        }
+
+        function checkOut() {
+            const td = today();
+            const att = attendance.find(a => a.date === td && a.worker === currentUser && !a.timeOut);
+            if (!att) return alert("Belum check-in!");
+            att.timeOut = nowTime();
+            saveAll();
+            alert("✅ Check-out berhasil! Selamat istirahat.");
+            showSection('absensi');
+        }
+
+        function renderAttHistory() {
+            const cont = document.getElementById('attHistory');
+            const filtered = attendance.filter(a => a.worker === currentUser).reverse().slice(0,10);
+            if (filtered.length === 0) cont.innerHTML = '<p class="text-zinc-500 text-center py-8">Belum ada riwayat</p>';
+            else {
+                filtered.forEach(a => {
+                    const d = document.createElement('div');
+                    d.className = "bg-zinc-800 p-4 rounded-2xl text-sm flex justify-between";
+                    d.innerHTML = `<span>\( {a.date}</span><span> \){a.timeIn} - ${a.timeOut || '??'}</span>`;
+                    cont.appendChild(d);
+                });
+            }
+        }
+
+        // ================== REQUEST ==================
+        function renderRequests(container) {
+            if (currentRole === 'member') {
+                // Member request form
+                container.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-6">Request Barang</h2>
+                    <div class="bg-zinc-800 p-6 rounded-3xl">
+                        <input id="reqItem" placeholder="Nama barang yang diminta" class="w-full bg-zinc-700 p-4 rounded-2xl mb-4">
+                        <textarea id="reqNote" placeholder="Catatan (opsional)" class="w-full bg-zinc-700 p-4 rounded-2xl h-32 mb-6"></textarea>
+                        <button onclick="kirimRequest()" class="w-full bg-teal-600 py-4 rounded-3xl font-bold">Kirim Request ke Admin</button>
+                    </div>
+                `;
+            } else {
+                // Admin view requests
+                let html = `<h2 class="text-2xl font-bold mb-6">Request dari Member</h2><div id="reqList" class="space-y-4"></div>`;
+                container.innerHTML = html;
+                const list = document.getElementById('reqList');
+                if (requestsList.length === 0) list.innerHTML = '<p class="text-center text-zinc-500 py-12">Belum ada request</p>';
+                else requestsList.forEach((r,i) => {
+                    const d = document.createElement('div');
+                    d.className = "bg-zinc-800 p-5 rounded-3xl";
+                    d.innerHTML = `
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="font-medium">${r.item}</div>
+                                <div class="text-xs text-zinc-400">${r.date} ${r.time} • ${r.requester}</div>
+                            </div>
+                            <button onclick="hapusRequest(${i})" class="text-red-400 text-sm">Hapus</button>
+                        </div>
+                        \( {r.note ? `<p class="text-xs mt-3 text-zinc-400"> \){r.note}</p>` : ''}
+                    `;
+                    list.appendChild(d);
+                });
+            }
+        }
+
+        function kirimRequest() {
+            const item = document.getElementById('reqItem').value.trim();
+            if (!item) return alert("Isi nama barang!");
+            requestsList.push({
+                date: today(),
+                time: nowTime(),
+                requester: currentUser,
+                item: item,
+                note: document.getElementById('reqNote').value.trim()
+            });
+            saveAll();
+            alert("✅ Request terkirim ke admin!");
+            showSection('stok');
+        }
+
+        function hapusRequest(i) {
+            if (confirm("Hapus request ini?")) {
+                requestsList.splice(i,1);
+                saveAll();
+                showSection('requests');
+            }
+        }
+
+        // ================== LAPORAN ==================
+        function renderLaporan(container) {
+            const td = today();
+            const todaySales = sales.filter(s => s.date === td);
+            const total = todaySales.reduce((a,s)=>a+s.total,0);
+
+            let html = `
+                <h2 class="text-2xl font-bold mb-6">Laporan Penjualan</h2>
+                <div class="bg-zinc-800 rounded-3xl p-6 mb-8">
+                    <div class="flex justify-between text-sm">
+                        <div>Tanggal</div>
+                        <div class="font-medium">${td}</div>
+                    </div>
+                    <div class="flex justify-between text-sm mt-3">
+                        <div>Total Hari Ini</div>
+                        <div class="font-bold text-teal-400">${formatRupiah(total)}</div>
+                    </div>
+                </div>
+                <button onclick="generateLaporan()" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 py-5 rounded-3xl font-bold text-lg mb-8">
+                    📋 Generate Laporan & Copy ke WA
+                </button>
+                <div class="text-xs text-zinc-500">Riwayat penjualan hari ini:</div>
+                <div class="mt-4 space-y-2 max-h-96 overflow-auto">
+                    ${todaySales.map(s => `
+                        <div class="bg-zinc-800 p-4 rounded-2xl text-sm">
+                            ${s.time} • \( {s.itemName} × \){s.qty} = \( {formatRupiah(s.total)} <span class="text-zinc-500">( \){s.worker})</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function generateLaporan() {
+            const td = today();
+            const todaySales = sales.filter(s => s.date === td);
+            const total = todaySales.reduce((a,s)=>a+s.total,0);
+
+            let text = `📊 LAPORAN PENJUALAN MALTA VAPESTORE\n`;
+            text += `Tanggal: ${td}\n`;
+            text += `Jam Buka: 10:00 - Jam Tutup: 22:00\n\n`;
+            text += `TOTAL HARI INI: ${formatRupiah(total)}\n\n`;
+            text += `Detail:\n`;
+            todaySales.forEach(s => {
+                text += `${s.time} | \( {s.itemName} × \){s.qty} = \( {formatRupiah(s.total)} ( \){s.worker})\n`;
+            });
+            text += `\nTerima kasih! 💨`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("✅ Laporan sudah dicopy! Langsung paste ke WhatsApp.");
+                // Optional: window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+            });
+        }
+
+        // ================== START ==================
+        // Auto save setiap perubahan
+        setInterval(saveAll, 30000);
+    </script>
+</body>
+</html>
