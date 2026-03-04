@@ -3,259 +3,674 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malta VapeStore</title>
+    <title>Malta VapeStore | Management</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/h3D0nVP.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; }
+        body { font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .active-tab { color: #14b8a6; border-bottom: 4px solid #14b8a6; }
+        .active-nav { color: #14b8a6; }
+        input:focus, textarea:focus { border-color: #14b8a6; }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
-    <div class="max-w-md mx-auto bg-zinc-900 min-h-screen shadow-2xl overflow-hidden" id="app">
-        <!-- HEADER -->
-        <header id="header" class="bg-gradient-to-r from-teal-600 to-teal-500 p-4 flex items-center gap-3 sticky top-0 z-50">
-            <img src="https://i.imgur.com/h3D0nVP.png" alt="Malta Logo" class="w-12 h-12 rounded-2xl">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">Malta VapeStore</h1>
-                <p class="text-xs text-teal-100 -mt-1">EST 2019 • Bandung</p>
+    <div class="max-w-md mx-auto bg-zinc-900 min-h-screen shadow-2xl relative flex flex-col" id="app">
+        
+        <header id="header" class="bg-zinc-900 border-b border-zinc-800 p-4 flex items-center gap-3 sticky top-0 z-50">
+            <img src="https://i.imgur.com/h3D0nVP.png" alt="Malta Logo" class="w-10 h-10 rounded-xl">
+            <div class="flex-1">
+                <h1 class="text-xl font-bold tracking-tight text-teal-500">Malta VapeStore</h1>
+                <p id="userStatus" class="text-[10px] text-zinc-500 uppercase tracking-widest">Guest Mode</p>
             </div>
-            <button onclick="logout()" id="logoutBtn" class="ml-auto text-white text-sm font-medium hidden">Logout</button>
+            <button onclick="logout()" id="logoutBtn" class="hidden bg-zinc-800 text-zinc-400 px-3 py-1 rounded-lg text-xs font-medium border border-zinc-700">Logout</button>
         </header>
 
-        <!-- LANDING -->
-        <div id="landing" class="p-6">
-            <div class="text-center py-12">
-                <img src="https://i.imgur.com/h3D0nVP.png" class="mx-auto w-44 mb-6">
-                <h2 class="text-4xl font-bold mb-2 text-teal-400">Selamat Datang!</h2>
-                <p class="text-zinc-400">Pilih peran kamu</p>
+        <div id="landing" class="flex-1 flex flex-col p-6 justify-center">
+            <div class="text-center mb-12">
+                <img src="https://i.imgur.com/h3D0nVP.png" class="mx-auto w-40 mb-6 drop-shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+                <h2 class="text-3xl font-bold mb-2">MALTA VAPE</h2>
+                <p class="text-zinc-500 text-sm italic">"Cloud in every breath, quality in every drop."</p>
             </div>
+            
             <div class="space-y-4">
-                <button onclick="showLogin('owner')" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-amber-400/30 p-6 rounded-3xl flex items-center gap-5">
-                    <i class="fa-solid fa-crown text-5xl text-amber-400"></i>
-                    <div class="text-left"><div class="font-semibold text-2xl">Owner</div><div class="text-zinc-500">Manajemen lengkap</div></div>
+                <button onclick="showLogin('owner')" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-amber-500/20 p-5 rounded-3xl flex items-center gap-4 transition-all active:scale-95">
+                    <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-crown text-2xl text-amber-500"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-lg">Owner Login</div>
+                        <div class="text-zinc-500 text-xs">Full access & management</div>
+                    </div>
                 </button>
-                <button onclick="showLogin('worker')" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-blue-400/30 p-6 rounded-3xl flex items-center gap-5">
-                    <i class="fa-solid fa-user-gear text-5xl text-blue-400"></i>
-                    <div class="text-left"><div class="font-semibold text-2xl">Worker</div><div class="text-zinc-500">Catat penjualan & absen</div></div>
+
+                <button onclick="showLogin('worker')" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-blue-500/20 p-5 rounded-3xl flex items-center gap-4 transition-all active:scale-95">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-user-gear text-2xl text-blue-500"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-lg">Worker Login</div>
+                        <div class="text-zinc-500 text-xs">Sales & attendance only</div>
+                    </div>
                 </button>
-                <button onclick="enterMember()" class="w-full bg-zinc-800 hover:bg-zinc-700 border border-emerald-400/30 p-6 rounded-3xl flex items-center gap-5">
-                    <i class="fa-solid fa-users text-5xl text-emerald-400"></i>
-                    <div class="text-left"><div class="font-semibold text-2xl">Member</div><div class="text-zinc-500">Lihat stok & request</div></div>
+
+                <button onclick="enterMember()" class="w-full bg-teal-600 hover:bg-teal-500 p-5 rounded-3xl flex items-center gap-4 transition-all active:scale-95 shadow-lg shadow-teal-900/20">
+                    <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-users text-2xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-lg text-white">Member Catalog</div>
+                        <div class="text-teal-100 text-xs text-opacity-70">Check stock & requests</div>
+                    </div>
                 </button>
+            </div>
+            <p class="text-center text-[10px] text-zinc-600 mt-12">MALTA SYSTEM v2.0 • 2026</p>
+        </div>
+
+        <div id="loginModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+            <div class="bg-zinc-900 w-full max-w-xs rounded-3xl p-8 border border-zinc-800">
+                <div id="modalIcon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-3xl"></div>
+                <h3 id="modalTitle" class="text-2xl font-bold text-center mb-2">Login</h3>
+                <p class="text-zinc-500 text-center text-xs mb-8">Masukkan kredensial anda</p>
+                
+                <div class="space-y-4">
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-4 top-4 text-zinc-500 text-sm"></i>
+                        <input id="username" type="text" placeholder="Username" class="w-full bg-zinc-800 p-4 pl-12 rounded-2xl outline-none border border-transparent transition-all">
+                    </div>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-4 text-zinc-500 text-sm"></i>
+                        <input id="password" type="password" placeholder="Password" class="w-full bg-zinc-800 p-4 pl-12 rounded-2xl outline-none border border-transparent transition-all">
+                    </div>
+                    <button onclick="doLogin()" class="w-full bg-teal-600 hover:bg-teal-500 py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg transition-all active:scale-95">Masuk</button>
+                    <button onclick="hideModal()" class="w-full text-zinc-500 text-sm font-medium py-2">Batal</button>
+                </div>
             </div>
         </div>
 
-        <!-- LOGIN MODAL -->
-        <div id="loginModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-            <div class="bg-zinc-900 w-full max-w-xs mx-4 rounded-3xl p-8">
-                <h3 id="modalTitle" class="text-2xl font-bold text-center mb-8">Login</h3>
-                <input id="username" placeholder="Username" class="block w-full bg-zinc-800 p-4 rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-teal-500">
-                <input id="password" type="password" placeholder="Password" class="block w-full bg-zinc-800 p-4 rounded-2xl mb-8 outline-none focus:ring-2 focus:ring-teal-500">
-                <button onclick="doLogin()" class="w-full bg-teal-600 hover:bg-teal-500 py-4 rounded-3xl font-bold text-lg">Masuk</button>
-                <button onclick="hideModal()" class="w-full mt-4 text-zinc-400">Batal</button>
-            </div>
+        <div id="mainApp" class="hidden flex flex-col flex-1 overflow-hidden">
+            <div id="tabs" class="flex border-b border-zinc-800 bg-zinc-950 overflow-x-auto no-scrollbar"></div>
+            
+            <main id="content" class="flex-1 overflow-y-auto p-5 pb-24"></main>
+
+            <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-zinc-900 border-t border-zinc-800 flex items-center justify-around py-2 px-2 z-50 shadow-2xl"></nav>
         </div>
 
-        <!-- MAIN APP -->
-        <div id="mainApp" class="hidden flex flex-col h-[calc(100vh-73px)]">
-            <div id="tabs" class="flex border-b border-zinc-700 bg-zinc-950 overflow-x-auto"></div>
-            <div id="content" class="flex-1 overflow-auto p-5 pb-24"></div>
-            <div id="bottomNav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-zinc-900 border-t border-zinc-700 flex text-xs"></div>
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[200]">
+            <div class="text-center">
+                <div class="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-sm font-medium">Sinkronisasi Data...</p>
+            </div>
         </div>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyHrQU4GD5PfMcEM9SGtRqKdLoUjNCzmmysmh6gkVcInN2inV2y--h7aSMBD1PW1P2W/exec";
-
+        
+        // App State
         let products = [], sales = [], attendance = [], requestsList = [];
         let currentRole = null, currentUser = null, currentChart = null;
-        let currentCategory = null, currentSubcategory = null;
+        let currentSection = '';
+        let tempRole = null;
 
-        async function fetchData(action) {
-            try {
-                const res = await fetch(`\( {API_URL}?action= \){action}`);
-                return await res.json();
-            } catch (e) { return []; }
-        }
+        // --- CORE FUNCTIONS ---
 
-        async function postData(payload) {
+        async function apiRequest(action, data = {}) {
+            showLoading(true);
             try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                return await res.json();
-            } catch (e) { return {status:'error'}; }
+                if (action.startsWith('get')) {
+                    const res = await fetch(`${API_URL}?action=${action}`);
+                    const json = await res.json();
+                    return json;
+                } else {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action, ...data })
+                    });
+                    const json = await res.json();
+                    return json;
+                }
+            } catch (e) {
+                console.error("API Error:", e);
+                alert("Koneksi gagal. Pastikan API URL benar dan aktif.");
+                return action.startsWith('get') ? [] : { status: 'error' };
+            } finally {
+                showLoading(false);
+            }
         }
 
         async function loadAllData() {
-            products = await fetchData('getProducts');
-            sales = await fetchData('getSales');
-            attendance = await fetchData('getAttendance');
-            requestsList = await fetchData('getRequests');
+            products = await apiRequest('getProducts');
+            sales = await apiRequest('getSales');
+            attendance = await apiRequest('getAttendance');
+            requestsList = await apiRequest('getRequests');
         }
 
-        function formatRupiah(n) { return 'Rp ' + (n||0).toLocaleString('id-ID'); }
-        function today() { return new Date().toISOString().split('T')[0]; }
-        function nowTime() { return new Date().toTimeString().slice(0,5); }
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+        }
 
-        // LOGIN (sama seperti sebelumnya)
-        function showLogin(role) { /* sama */ document.getElementById('modalTitle').textContent = role === 'owner' ? 'Login Owner' : 'Login Worker'; window.tempRole = role; document.getElementById('loginModal').classList.remove('hidden'); }
-        function hideModal() { document.getElementById('loginModal').classList.add('hidden'); }
+        // --- AUTH SYSTEM ---
+
+        function showLogin(role) {
+            tempRole = role;
+            const modal = document.getElementById('loginModal');
+            const title = document.getElementById('modalTitle');
+            const icon = document.getElementById('modalIcon');
+            
+            title.innerText = role === 'owner' ? 'Owner Login' : 'Worker Login';
+            icon.innerHTML = role === 'owner' ? '<i class="fa-solid fa-crown text-amber-500"></i>' : '<i class="fa-solid fa-user-gear text-blue-500"></i>';
+            icon.className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-3xl ${role === 'owner' ? 'bg-amber-500/10' : 'bg-blue-500/10'}`;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
         async function doLogin() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value.trim();
-            const role = window.tempRole;
-            if (role === 'owner' && user === 'Rizal' && pass === '22446688') { currentRole = 'owner'; currentUser = 'Rizal'; }
-            else if (role === 'worker' && user === 'Zikra' && pass === '010299') { currentRole = 'worker'; currentUser = 'Zikra'; }
-            else { alert('ID atau password salah!'); return; }
-            hideModal(); await enterApp();
+
+            if (tempRole === 'owner' && user === 'Rizal' && pass === '22446688') {
+                currentRole = 'owner'; currentUser = 'Rizal';
+            } else if (tempRole === 'worker' && user === 'Zikra' && pass === '010299') {
+                currentRole = 'worker'; currentUser = 'Zikra';
+            } else {
+                alert('Username atau Password salah!');
+                return;
+            }
+
+            hideModal();
+            await enterApp();
         }
-        async function enterMember() { currentRole = 'member'; currentUser = 'Member'; await enterApp(); }
+
+        async function enterMember() {
+            currentRole = 'member';
+            currentUser = 'Guest Member';
+            await enterApp();
+        }
 
         async function enterApp() {
             await loadAllData();
             document.getElementById('landing').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
-            buildTabs();
+            document.getElementById('userStatus').innerText = `${currentRole} | ${currentUser}`;
+            
             showSection(currentRole === 'member' ? 'stok' : 'dashboard');
         }
 
-        function logout() { if (confirm('Keluar?')) location.reload(); }
+        function logout() {
+            if (confirm('Keluar dari sistem?')) {
+                location.reload();
+            }
+        }
 
-        // TABS & NAV (sama persis seperti kode lama, tidak diubah)
-        let currentSection = '';
-        function buildTabs() { /* copy dari kode sebelumnya */ 
+        // End of Part 1
+        // --- NAVIGATION & UI RENDERING ---
+
+        function buildNavigation() {
             const tabsDiv = document.getElementById('tabs');
             const bottomDiv = document.getElementById('bottomNav');
-            tabsDiv.innerHTML = ''; bottomDiv.innerHTML = '';
-            let items = currentRole === 'member' ? 
-                [{key:'stok', icon:'fa-box', label:'Stok'},{key:'request', icon:'fa-paper-plane', label:'Request'}] :
-                [{key:'dashboard', icon:'fa-chart-bar', label:'Dashboard'},{key:'stok', icon:'fa-box', label:'Stok'},{key:'penjualan', icon:'fa-cart-plus', label:'Jual'},{key:'requests', icon:'fa-bell', label:'Request'},{key:'laporan', icon:'fa-file-alt', label:'Laporan'},{key:'absensi', icon:'fa-clock', label:'Absen'}];
-            items.forEach(item => {
-                const tab = document.createElement('button'); tab.className = `flex-1 py-4 text-sm font-medium flex flex-col items-center gap-1 ${currentSection === item.key ? 'text-teal-400 border-b-4 border-teal-400' : 'text-zinc-400'}`; tab.innerHTML = `<i class="fa-solid \( {item.icon} text-xl"></i><span> \){item.label}</span>`; tab.onclick = () => showSection(item.key); tabsDiv.appendChild(tab);
-                const b = document.createElement('button'); b.className = `flex-1 flex flex-col items-center py-2 ${currentSection === item.key ? 'text-teal-400' : 'text-zinc-400'}`; b.innerHTML = `<i class="fa-solid \( {item.icon} text-2xl"></i><span class="text-[10px]"> \){item.label}</span>`; b.onclick = () => showSection(item.key); bottomDiv.appendChild(b);
+            tabsDiv.innerHTML = '';
+            bottomDiv.innerHTML = '';
+
+            const menuItems = currentRole === 'member' ? [
+                { key: 'stok', icon: 'fa-box-open', label: 'Katalog' },
+                { key: 'request', icon: 'fa-paper-plane', label: 'Request' }
+            ] : [
+                { key: 'dashboard', icon: 'fa-chart-pie', label: 'Stats' },
+                { key: 'stok', icon: 'fa-boxes-stacked', label: 'Stok' },
+                { key: 'penjualan', icon: 'fa-cart-shopping', label: 'Jual' },
+                { key: 'requests', icon: 'fa-bell', label: 'Req' },
+                { key: 'laporan', icon: 'fa-file-invoice', label: 'Lap' },
+                { key: 'absensi', icon: 'fa-clock-rotate-left', label: 'Absen' }
+            ];
+
+            menuItems.forEach(item => {
+                const isActive = currentSection === item.key;
+                
+                // Top Tabs
+                const tab = document.createElement('button');
+                tab.className = `flex-1 py-4 text-[11px] font-bold flex flex-col items-center gap-1 min-w-[80px] transition-all ${isActive ? 'active-tab' : 'text-zinc-500 border-b-4 border-transparent'}`;
+                tab.innerHTML = `<i class="fa-solid ${item.icon} text-lg"></i><span>${item.label.toUpperCase()}</span>`;
+                tab.onclick = () => showSection(item.key);
+                tabsDiv.appendChild(tab);
+
+                // Bottom Nav
+                const b = document.createElement('button');
+                b.className = `flex-1 flex flex-col items-center py-2 transition-all ${isActive ? 'active-nav' : 'text-zinc-500'}`;
+                b.innerHTML = `<i class="fa-solid ${item.icon} text-xl"></i><span class="text-[9px] mt-1">${item.label}</span>`;
+                b.onclick = () => showSection(item.key);
+                bottomDiv.appendChild(b);
             });
         }
 
         async function showSection(section) {
             currentSection = section;
-            buildTabs();
-            const content = document.getElementById('content');
-            content.innerHTML = '';
-            await loadAllData(); // selalu refresh data terbaru
-            if (section === 'dashboard') renderDashboard(content);
-            else if (section === 'stok') renderStok(content);
-            else if (section === 'penjualan') renderPenjualan(content);
-            else if (section === 'absensi') renderAbsensi(content);
-            else if (section === 'laporan') renderLaporan(content);
-            else if (section === 'requests' || section === 'request') renderRequests(content);
-        }
+            buildNavigation();
+            const container = document.getElementById('content');
+            container.innerHTML = '';
 
-        // DASHBOARD (sama, pakai data global)
-        function renderDashboard(container) { /* sama seperti kode lama */ 
-            const td = today();
-            const todaySales = sales.filter(s => s.date === td);
-            const total = todaySales.reduce((sum, s) => sum + (s.total||0), 0);
-            const top = {};
-            todaySales.forEach(s => top[s.itemname || s.itemName] = (top[s.itemname || s.itemName]||0) + (s.qty||0));
-            const topSorted = Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            let html = `<div class="text-center mb-10"><p class="text-zinc-400 text-sm">\( {td}</p><p class="text-6xl font-bold text-teal-400 mt-1"> \){formatRupiah(total)}</p><p class="text-xs text-zinc-500">PENJUALAN HARI INI</p></div>`;
-            html += `<div class="bg-zinc-800 rounded-3xl p-6"><h3 class="font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-fire text-orange-400"></i> Paling Rame Hari Ini</h3><canvas id="topChart" class="h-60"></canvas></div>`;
-            container.innerHTML = html;
-            setTimeout(() => {
-                if (currentChart) currentChart.destroy();
-                currentChart = new Chart(document.getElementById('topChart'), {type: 'bar', data: {labels: topSorted.map(i=>i[0].slice(0,10)), datasets: [{label:'Terjual', data:topSorted.map(i=>i[1]), backgroundColor:'#14b8a6'}]}, options: {responsive:true, plugins:{legend:{display:false}}}});
-            }, 300);
-        }
-
-        // STOK OWNER/WORKER
-        function renderStok(container) {
-            if (currentRole === 'member') return renderMemberStok(container);
-            let html = `<div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">Daftar Stok</h2>${currentRole === 'owner' ? `<button onclick="tambahBarang()" class="bg-teal-600 px-6 py-3 rounded-2xl text-sm font-medium">+ Barang Baru</button>` : ''}</div><input id="search" onkeyup="cariStok()" placeholder="Cari nama barang..." class="w-full bg-zinc-800 border-none p-4 rounded-3xl mb-6"><div id="stokContainer" class="space-y-4"></div>`;
-            container.innerHTML = html;
-            renderStokItems();
-        }
-        function renderStokItems(filtered = products) {
-            const cont = document.getElementById('stokContainer'); cont.innerHTML = '';
-            filtered.forEach(p => {
-                const div = document.createElement('div');
-                div.className = "bg-zinc-800 rounded-3xl p-5 flex justify-between items-center";
-                div.innerHTML = `<div><div class="font-medium">\( {p.name}</div><div class="text-xs text-zinc-400"> \){p.category} • \( {p.subcategory}</div><div class="text-teal-400 text-sm"> \){formatRupiah(p.price)}</div></div><div class="text-right"><div class="text-4xl font-bold text-emerald-400">\( {p.stock}</div><div class="text-xs text-zinc-500">stok</div></div> \){currentRole === 'owner' ? `<button onclick="editStok(${p.id})" class="ml-4 text-amber-400"><i class="fa-solid fa-pen"></i></button>` : ''}`;
-                cont.appendChild(div);
-            });
-        }
-        function cariStok() { /* sama */ const term = document.getElementById('search').value.toLowerCase(); const filtered = products.filter(p => p.name.toLowerCase().includes(term)); renderStokItems(filtered); }
-
-        async function tambahBarang() {
-            const name = prompt("Nama barang:");
-            if (!name) return;
-            const category = prompt("Kategori (Pod/Mod/Liquid/Cartridge/Aksesori):");
-            const subcategory = prompt("Subkategori / Merk:");
-            const price = parseInt(prompt("Harga:"));
-            const stock = parseInt(prompt("Stok awal:"));
-            const id = Date.now();
-            await postData({action: 'addProduct', id, name, price, stock, category, subcategory});
-            await loadAllData();
-            renderStokItems();
-        }
-
-        async function editStok(id) {
-            const p = products.find(x => x.id == id);
-            const newStock = parseInt(prompt(`Stok baru untuk ${p.name}:`, p.stock));
-            if (!isNaN(newStock)) {
-                await postData({action: 'updateStock', id, stock: newStock});
-                await loadAllData();
-                renderStokItems();
+            switch(section) {
+                case 'dashboard': renderDashboard(container); break;
+                case 'stok': renderStok(container); break;
+                case 'penjualan': renderPenjualan(container); break;
+                case 'absensi': renderAbsensi(container); break;
+                case 'laporan': renderLaporan(container); break;
+                case 'requests': case 'request': renderRequests(container); break;
             }
         }
 
-        // PENJUALAN
-        async function renderPenjualan(container) {
-            let html = `<h2 class="text-2xl font-bold mb-6">Catat Penjualan</h2><div id="jualList" class="space-y-6"></div>`;
-            container.innerHTML = html;
-            const list = document.getElementById('jualList');
-            products.forEach(p => {
-                const d = document.createElement('div');
-                d.className = "bg-zinc-800 rounded-3xl p-5";
-                d.innerHTML = `<div class="flex justify-between items-center"><div><div class="font-medium">\( {p.name}</div><div class="text-teal-400"> \){formatRupiah(p.price)}</div></div><div class="flex items-center gap-3"><input id="qty\( {p.id}" type="number" value="1" min="1" class="w-20 bg-zinc-700 text-center p-3 rounded-2xl"><button onclick="jual( \){p.id})" class="bg-emerald-600 px-7 py-3 rounded-2xl font-medium">JUAL</button></div></div>`;
-                list.appendChild(d);
+        // --- DASHBOARD ---
+        function renderDashboard(container) {
+            const td = today();
+            const todaySales = sales.filter(s => String(s.date).startsWith(td));
+            const totalRevenue = todaySales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            
+            // Hitung Item Terlaris
+            const itemCounts = {};
+            todaySales.forEach(s => {
+                const name = s.itemname || s.itemName;
+                itemCounts[name] = (itemCounts[name] || 0) + (Number(s.qty) || 0);
+            });
+            const sortedItems = Object.entries(itemCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+            container.innerHTML = `
+                <div class="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-3xl p-8 mb-6 border border-zinc-700 text-center shadow-xl">
+                    <p class="text-zinc-400 text-xs font-semibold tracking-widest uppercase mb-2">Penjualan Hari Ini</p>
+                    <h2 class="text-4xl font-bold text-teal-400">${formatRupiah(totalRevenue)}</h2>
+                    <p class="text-[10px] text-zinc-500 mt-4"><i class="fa-solid fa-calendar-day mr-1"></i> ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+                
+                <div class="bg-zinc-800/50 rounded-3xl p-6 border border-zinc-800">
+                    <h3 class="font-bold mb-6 flex items-center gap-2"><i class="fa-solid fa-fire text-orange-500"></i> Produk Paling Laris</h3>
+                    <canvas id="topChart" class="w-full"></canvas>
+                </div>
+            `;
+
+            setTimeout(() => {
+                if (currentChart) currentChart.destroy();
+                const ctx = document.getElementById('topChart').getContext('2d');
+                currentChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedItems.map(i => i[0].substring(0, 12) + '..'),
+                        datasets: [{
+                            data: sortedItems.map(i => i[1]),
+                            backgroundColor: '#14b8a6',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: { 
+                        indexAxis: 'y',
+                        responsive: true, 
+                        plugins: { legend: { display: false } },
+                        scales: { x: { grid: { display: false }, ticks: { color: '#71717a' } }, y: { grid: { display: false }, ticks: { color: '#71717a' } } }
+                    }
+                });
+            }, 100);
+        }
+
+        // --- STOK & CATALOG ---
+        function renderStok(container) {
+            if (currentRole === 'member') {
+                renderMemberHierarchy(container);
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Data Stok</h2>
+                        <p class="text-zinc-500 text-xs">Kelola ketersediaan barang</p>
+                    </div>
+                    ${currentRole === 'owner' ? '<button onclick="tambahBarang()" class="bg-teal-600 p-3 rounded-2xl text-xs font-bold active:scale-90 transition-transform"><i class="fa-solid fa-plus mr-1"></i> BARANG</button>' : ''}
+                </div>
+                <div class="relative mb-6">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-zinc-500"></i>
+                    <input id="searchStok" onkeyup="filterStok()" placeholder="Cari barang..." class="w-full bg-zinc-800 p-4 pl-12 rounded-2xl outline-none border border-zinc-700 focus:border-teal-500">
+                </div>
+                <div id="stokList" class="space-y-3"></div>
+            `;
+            filterStok();
+        }
+
+        function filterStok() {
+            const query = document.getElementById('searchStok')?.value.toLowerCase() || '';
+            const list = document.getElementById('stokList');
+            if(!list) return;
+            list.innerHTML = '';
+
+            products.filter(p => p.name.toLowerCase().includes(query)).forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-zinc-800 p-5 rounded-2xl border border-zinc-700/50 flex justify-between items-center";
+                card.innerHTML = `
+                    <div class="flex-1">
+                        <p class="text-[10px] text-teal-500 font-bold uppercase">${p.category} • ${p.subcategory}</p>
+                        <h4 class="font-semibold text-zinc-100">${p.name}</h4>
+                        <p class="text-sm font-bold text-zinc-400 mt-1">${formatRupiah(p.price)}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <span class="block text-2xl font-black ${p.stock <= 5 ? 'text-red-500' : 'text-emerald-500'}">${p.stock}</span>
+                            <span class="text-[8px] text-zinc-500 uppercase tracking-tighter">Unit Tersedia</span>
+                        </div>
+                        ${currentRole === 'owner' ? `<button onclick="editStok(${p.id}, '${p.name}', ${p.stock})" class="text-amber-500 bg-amber-500/10 p-3 rounded-xl"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
+                    </div>
+                `;
+                list.appendChild(card);
             });
         }
 
-        async function jual(id) {
-            const qty = parseInt(document.getElementById('qty' + id).value);
-            if (!qty) return;
+        function renderMemberHierarchy(container) {
+            const categories = [...new Set(products.map(p => p.category))];
+            container.innerHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold">E-Katalog Malta</h2>
+                    <p class="text-zinc-500 text-sm">Pilih kategori produk</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    ${categories.map(cat => `
+                        <button onclick="showSubMember('${cat}')" class="bg-zinc-800 border border-zinc-700 p-6 rounded-3xl text-center active:scale-95 transition-all">
+                            <i class="fa-solid ${getIcon(cat)} text-3xl text-teal-500 mb-3"></i>
+                            <div class="font-bold text-sm">${cat}</div>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function showSubMember(cat) {
+            const container = document.getElementById('content');
+            const subs = [...new Set(products.filter(p => p.category === cat).map(p => p.subcategory))];
+            container.innerHTML = `
+                <button onclick="showSection('stok')" class="mb-6 text-zinc-500 flex items-center gap-2 font-bold"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
+                <h3 class="text-xl font-bold mb-6">Merek ${cat}</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    ${subs.map(sub => `
+                        <button onclick="showProductsMember('${cat}', '${sub}')" class="bg-zinc-800 p-5 rounded-2xl flex justify-between items-center border border-zinc-700">
+                            <span class="font-bold">${sub}</span>
+                            <i class="fa-solid fa-chevron-right text-zinc-600"></i>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function showProductsMember(cat, sub) {
+            const container = document.getElementById('content');
+            const list = products.filter(p => p.category === cat && p.subcategory === sub);
+            container.innerHTML = `
+                <button onclick="showSubMember('${cat}')" class="mb-6 text-zinc-500 flex items-center gap-2 font-bold"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
+                <h3 class="text-xl font-bold mb-6">${sub}</h3>
+                <div class="space-y-4">
+                    ${list.map(p => `
+                        <div class="bg-zinc-800 p-6 rounded-3xl border-2 border-zinc-700">
+                            <h4 class="font-bold text-lg mb-1">${p.name}</h4>
+                            <p class="text-teal-400 font-bold text-xl mb-4">${formatRupiah(p.price)}</p>
+                            <div class="flex justify-between items-center pt-4 border-t border-zinc-700">
+                                <span class="text-xs ${p.stock > 0 ? 'text-emerald-500' : 'text-red-500'} font-bold">
+                                    <i class="fa-solid fa-circle text-[8px] mr-1"></i> ${p.stock > 0 ? 'STOK TERSEDIA' : 'HABIS'}
+                                </span>
+                                <button onclick="tanyaWA('${p.name}')" class="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 active:scale-90">
+                                    <i class="fa-brands fa-whatsapp text-lg"></i> TANYA ADMIN
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // --- TRANSAKSI PENJUALAN ---
+        function renderPenjualan(container) {
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-2">Catat Penjualan</h2>
+                <p class="text-zinc-500 text-xs mb-6">Pastikan stok cukup sebelum input</p>
+                <div class="relative mb-6">
+                    <input id="searchJual" onkeyup="filterJual()" placeholder="Cari produk yang terjual..." class="w-full bg-zinc-800 p-4 rounded-2xl outline-none border border-zinc-700">
+                </div>
+                <div id="jualList" class="space-y-4"></div>
+            `;
+            filterJual();
+        }
+
+        function filterJual() {
+            const q = document.getElementById('searchJual')?.value.toLowerCase() || '';
+            const list = document.getElementById('jualList');
+            if(!list) return;
+            list.innerHTML = '';
+
+            products.filter(p => p.name.toLowerCase().includes(q) && p.stock > 0).forEach(p => {
+                const div = document.createElement('div');
+                div.className = "bg-zinc-800 p-4 rounded-2xl border border-zinc-700 flex justify-between items-center";
+                div.innerHTML = `
+                    <div class="flex-1 mr-4">
+                        <p class="font-bold text-sm">${p.name}</p>
+                        <p class="text-xs text-teal-500">${formatRupiah(p.price)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input id="qty_${p.id}" type="number" value="1" min="1" max="${p.stock}" class="w-12 bg-zinc-900 border border-zinc-700 p-2 rounded-lg text-center text-sm">
+                        <button onclick="prosesJual(${p.id})" class="bg-teal-600 px-4 py-2 rounded-xl text-xs font-black active:scale-90 transition-all">JUAL</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function prosesJual(id) {
             const p = products.find(x => x.id == id);
-            if ((p.stock||0) < qty) return alert("Stok tidak cukup!");
-            const total = p.price * qty;
-            await postData({action: 'addSale', date: today(), time: nowTime(), itemName: p.name, qty, total, worker: currentUser});
-            await postData({action: 'updateStock', id, stock: (p.stock||0) - qty});
-            alert(`✅ ${qty} ${p.name} tercatat!`);
-            await loadAllData();
-            showSection('penjualan');
+            const qty = parseInt(document.getElementById(`qty_${id}`).value);
+            
+            if (qty > p.stock) return alert("Stok tidak mencukupi!");
+            if (qty < 1) return;
+
+            if (confirm(`Jual ${qty} pcs ${p.name}?`)) {
+                const total = p.price * qty;
+                const res = await apiRequest('addSale', {
+                    date: today(),
+                    time: nowTime(),
+                    itemName: p.name,
+                    qty: qty,
+                    total: total,
+                    worker: currentUser
+                });
+
+                if(res.status === 'success') {
+                    await apiRequest('updateStock', { id: id, stock: p.stock - qty });
+                    alert("Berhasil!");
+                    await loadAllData();
+                    showSection('penjualan');
+                }
+            }
         }
 
-        // ABSENSI, LAPORAN, REQUESTS (sama logic, tapi pakai postData + loadAllData)
-        // ... (semua fungsi absensi, laporan, request pakai await postData dan await loadAllData() setelahnya)
+        // --- ABSENSI ---
+        function renderAbsensi(container) {
+            const td = today();
+            const myAtt = attendance.find(a => a.date === td && a.worker === currentUser);
+            
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-8">Absensi Harian</h2>
+                <div class="bg-zinc-800 border border-zinc-700 rounded-3xl p-8 text-center mb-8">
+                    <p class="text-zinc-500 text-sm mb-2">${new Date().toLocaleDateString()}</p>
+                    <div class="text-3xl font-black mb-4">${myAtt ? (myAtt.timeOut || myAtt.timeout ? 'Selesai Shift' : 'Sedang Bekerja') : 'Belum Absen'}</div>
+                    <div class="flex justify-center gap-4 text-xs font-bold">
+                        <span class="bg-zinc-900 px-3 py-1 rounded-lg text-teal-500">IN: ${myAtt?.timeIn || myAtt?.timein || '--:--'}</span>
+                        <span class="bg-zinc-900 px-3 py-1 rounded-lg text-orange-500">OUT: ${myAtt?.timeOut || myAtt?.timeout || '--:--'}</span>
+                    </div>
+                </div>
 
-        // MEMBER HIERARCHICAL (sama seperti revisi sebelumnya)
-        function renderMemberStok(container) { /* sama */ }
-        function showSubcategories(cat, container) { /* sama */ }
-        function showProductsInSub(cat, sub, container) { /* sama */ }
-        function tanyaWA(name, stock) {
-            const msg = `Halo Malta VapeStore,%0AApakah ${encodeURIComponent(name)} masih tersedia?%0AStok saat ini: ${stock}%0ATerima kasih!`;
-            window.open(`https://wa.me/6283101456267?text=${msg}`, '_blank');
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="doAbsen('in')" ${myAtt ? 'disabled class="opacity-30 bg-zinc-700 p-6 rounded-3xl font-bold cursor-not-allowed"' : 'class="bg-emerald-600 p-6 rounded-3xl font-bold shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"'}>
+                        <i class="fa-solid fa-right-to-bracket mr-2"></i> CHECK IN MASUK
+                    </button>
+                    <button onclick="doAbsen('out')" ${!myAtt || (myAtt.timeOut || myAtt.timeout) ? 'disabled class="opacity-30 bg-zinc-700 p-6 rounded-3xl font-bold cursor-not-allowed"' : 'class="bg-orange-600 p-6 rounded-3xl font-bold shadow-lg shadow-orange-900/20 active:scale-95 transition-all"'}>
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i> CHECK OUT PULANG
+                    </button>
+                </div>
+            `;
         }
 
-        // Absensi, Laporan, Requests → copy dari kode lama tapi tambah await loadAllData() & postData
+        async function doAbsen(type) {
+            const res = await apiRequest('addAttendance', {
+                date: today(),
+                worker: currentUser,
+                timeIn: type === 'in' ? nowTime() : (attendance.find(a => a.date === today() && a.worker === currentUser).timeIn || ''),
+                timeOut: type === 'out' ? nowTime() : ''
+            });
+            if(res.status === 'success') {
+                alert(`Berhasil Absen ${type.toUpperCase()}`);
+                await loadAllData();
+                showSection('absensi');
+            }
+        }
 
-        // Auto refresh setiap 30 detik
-        setInterval(() => { if (currentRole) loadAllData().then(() => showSection(currentSection)); }, 30000);
+        // --- LAPORAN ---
+        function renderLaporan(container) {
+            const td = today();
+            const todaySales = sales.filter(s => String(s.date).startsWith(td));
+            const total = todaySales.reduce((a, s) => a + (Number(s.total) || 0), 0);
+
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-6">Laporan Harian</h2>
+                <div class="bg-zinc-800 rounded-3xl p-6 border border-zinc-700 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-zinc-500 text-sm">Total Omzet</span>
+                        <span class="bg-teal-500/10 text-teal-500 px-3 py-1 rounded-full text-[10px] font-black uppercase">LIVE</span>
+                    </div>
+                    <div class="text-3xl font-black mb-6">${formatRupiah(total)}</div>
+                    <button onclick="copyLaporan()" class="w-full bg-teal-600 p-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <i class="fa-solid fa-copy"></i> SALIN LAPORAN WA
+                    </button>
+                </div>
+                <h3 class="text-sm font-bold text-zinc-500 mb-4 uppercase tracking-widest">Rincian Transaksi</h3>
+                <div class="space-y-2">
+                    ${todaySales.length ? todaySales.map(s => `
+                        <div class="bg-zinc-800/40 p-4 rounded-xl text-xs border border-zinc-800 flex justify-between">
+                            <span><b>${s.time}</b> • ${s.itemname || s.itemName} (${s.qty}x)</span>
+                            <span class="font-bold text-teal-500">${formatRupiah(s.total)}</span>
+                        </div>
+                    `).join('') : '<p class="text-center text-zinc-600 py-10">Belum ada transaksi</p>'}
+                </div>
+            `;
+        }
+
+        function copyLaporan() {
+            const td = today();
+            const todaySales = sales.filter(s => String(s.date).startsWith(td));
+            const total = todaySales.reduce((a, s) => a + (Number(s.total) || 0), 0);
+            
+            let txt = `📊 *LAPORAN PENJUALAN MALTA*\n📅 Tanggal: ${td}\n----------------------------\n`;
+            todaySales.forEach((s, i) => {
+                txt += `${i+1}. ${s.itemname || s.itemName} (${s.qty}x) - ${formatRupiah(s.total)}\n`;
+            });
+            txt += `----------------------------\n*TOTAL OMZET: ${formatRupiah(total)}*\n\nTerima kasih, Malta VapeStore 💨`;
+            
+            navigator.clipboard.writeText(txt);
+            alert("Laporan berhasil disalin ke clipboard!");
+        }
+
+        // --- REQUESTS ---
+        function renderRequests(container) {
+            if (currentRole === 'member') {
+                container.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-2">Request Barang</h2>
+                    <p class="text-zinc-500 text-sm mb-8">Barang yang kamu cari belum ada? Beritahu kami!</p>
+                    <div class="space-y-4">
+                        <input id="reqItem" placeholder="Nama Barang (cth: Pod Oxva Xlim Pro)" class="w-full bg-zinc-800 p-5 rounded-3xl outline-none border border-zinc-700">
+                        <textarea id="reqNote" placeholder="Catatan tambahan (warna/nic)..." class="w-full bg-zinc-800 p-5 rounded-3xl outline-none border border-zinc-700 h-32"></textarea>
+                        <button onclick="submitRequest()" class="w-full bg-teal-600 py-5 rounded-3xl font-black shadow-lg active:scale-95 transition-all">KIRIM REQUEST</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-6">Daftar Request Member</h2>
+                <div class="space-y-4">
+                    ${requestsList.length ? requestsList.map(r => `
+                        <div class="bg-zinc-800 p-5 rounded-2xl border-l-4 border-teal-500">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-bold text-teal-500">${r.item}</span>
+                                <span class="text-[10px] text-zinc-500">${r.date}</span>
+                            </div>
+                            <p class="text-sm text-zinc-300 italic">"${r.note || 'Tanpa catatan'}"</p>
+                        </div>
+                    `).reverse().join('') : '<p class="text-center text-zinc-600 py-10">Tidak ada request baru</p>'}
+                </div>
+            `;
+        }
+
+        async function submitRequest() {
+            const item = document.getElementById('reqItem').value;
+            if(!item) return alert("Isi nama barang!");
+            const res = await apiRequest('addRequest', {
+                date: today(),
+                time: nowTime(),
+                requester: currentUser,
+                item: item,
+                note: document.getElementById('reqNote').value
+            });
+            if(res.status === 'success') {
+                alert("Request terkirim! Admin akan segera mengecek.");
+                showSection('stok');
+            }
+        }
+
+        // --- OWNER ONLY: EDIT/TAMBAH BARANG ---
+        async function editStok(id, name, oldStock) {
+            const val = prompt(`Update stok untuk ${name}:`, oldStock);
+            if (val !== null) {
+                await apiRequest('updateStock', { id: id, stock: parseInt(val) });
+                await loadAllData();
+                filterStok();
+            }
+        }
+
+        async function tambahBarang() {
+            const name = prompt("Nama Barang:");
+            const price = prompt("Harga (Angka saja):");
+            const stock = prompt("Stok Awal:");
+            const cat = prompt("Kategori (Pod/Mod/Liquid/Cartridge/Aksesori):");
+            const sub = prompt("Subkategori/Merek:");
+            
+            if (name && price && stock) {
+                await apiRequest('addProduct', {
+                    id: Date.now(),
+                    name: name,
+                    price: parseInt(price),
+                    stock: parseInt(stock),
+                    category: cat,
+                    subcategory: sub
+                });
+                await loadAllData();
+                filterStok();
+            }
+        }
+
+        // --- HELPERS ---
+        function formatRupiah(n) { return 'Rp' + Number(n).toLocaleString('id-ID'); }
+        function today() { return new Date().toISOString().split('T')[0]; }
+        function nowTime() { return new Date().toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }); }
+        function tanyaWA(name) { window.open(`https://wa.me/6283101456267?text=Halo%20Admin%20Malta,%20apakah%20stok%20*${encodeURIComponent(name)}*%20masih%20ada?`, '_blank'); }
+        function getIcon(cat) {
+            const icons = { 'Pod': 'fa-mobile-screen', 'Mod': 'fa-box', 'Liquid': 'fa-droplet', 'Cartridge': 'fa-plug', 'Aksesori': 'fa-battery-full' };
+            return icons[cat] || 'fa-tag';
+        }
+
+        // Auto-refresh data setiap 2 menit jika tab aktif
+        setInterval(() => { if(currentRole) loadAllData(); }, 120000);
     </script>
 </body>
 </html>
