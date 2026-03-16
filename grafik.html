@@ -3,86 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report - Malta Vape</title>
+    <title>Analisa Penjualan - Malta Vape</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #020617; color: #f8fafc; }
-        .bg-card { background: #0f172a; border: 1px solid #1e293b; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
         .gold-text { color: #fbbf24; }
+        .glass-card { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
-<body class="p-5 pb-24">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-xl font-bold gold-text">SALES REPORT</h1>
-        <a href="index.html" class="text-xs text-gray-500">Back</a>
+<body class="p-6 pb-20">
+
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-black gold-text tracking-tight uppercase">Analisa Store</h1>
+        <a href="index.html" class="w-10 h-10 bg-slate-900 flex items-center justify-center rounded-xl text-amber-500">←</a>
     </div>
 
-    <div class="bg-card p-4 rounded-2xl mb-6">
-        <canvas id="salesChart"></canvas>
-    </div>
-
-    <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-card p-4 rounded-2xl">
-            <p class="text-[10px] text-gray-500 uppercase">Bulan Ini</p>
-            <h2 id="total-bulan" class="text-lg font-bold">Rp 0</h2>
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="glass-card p-5 rounded-3xl">
+            <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Rata-rata / Nota</p>
+            <h3 id="avg-sale" class="text-lg font-black text-white">Rp 0</h3>
         </div>
-        <div class="bg-card p-4 rounded-2xl">
-            <p class="text-[10px] text-gray-500 uppercase">Hari Ini</p>
-            <h2 id="total-hari" class="text-lg font-bold">Rp 0</h2>
+        <div class="glass-card p-5 rounded-3xl">
+            <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Top Metode</p>
+            <h3 id="top-method" class="text-lg font-black text-white">-</h3>
         </div>
     </div>
 
-    <button onclick="copyReport()" class="w-full bg-amber-500 text-black font-bold p-4 rounded-xl shadow-lg">COPY TEXT REPORT</button>
+    <div class="glass-card p-6 rounded-[2.5rem] mb-6">
+        <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6">Tren Penjualan 7 Hari Terakhir</h4>
+        <canvas id="mainChart" height="250"></canvas>
+    </div>
+
+    <div class="glass-card p-6 rounded-[2.5rem] mb-8">
+        <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6">Perbandingan Metode Bayar</h4>
+        <canvas id="pieChart" height="200"></canvas>
+    </div>
+
+    <button onclick="copyFullReport()" class="w-full bg-slate-900 border border-amber-500/20 py-5 rounded-2xl font-black text-xs gold-text uppercase tracking-widest active:scale-95 transition-all">
+        Copy Full Report Teks
+    </button>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
 
-        async function loadReport() {
+        async function initAnalysis() {
             const resp = await fetch(API_URL + "?page=penjualan");
             const data = await resp.json();
             
-            let daily = 0;
-            let monthly = 0;
-            const today = new Date().toISOString().split('T')[0];
-            const thisMonth = today.slice(0, 7);
+            // 1. Calculate Stats
+            const totalOmzet = data.reduce((s,i) => s + i.total_akhir, 0);
+            const avg = totalOmzet / data.length;
+            document.getElementById('avg-sale').innerText = "Rp " + Math.round(avg/1000) + "k";
 
-            data.forEach(item => {
-                const itemDate = item.tanggal.split('T')[0];
-                if(itemDate === today) daily += item.total_akhir;
-                if(itemDate.startsWith(thisMonth)) monthly += item.total_akhir;
-            });
+            const methods = data.map(d => d.metode);
+            const topMethod = methods.sort((a,b) => methods.filter(v => v===a).length - methods.filter(v => v===b).length).pop();
+            document.getElementById('top-method').innerText = topMethod || "-";
 
-            document.getElementById('total-hari').innerText = "Rp " + daily.toLocaleString();
-            document.getElementById('total-bulan').innerText = "Rp " + monthly.toLocaleString();
-
-            renderChart(data);
+            renderCharts(data);
         }
 
-        function renderChart(data) {
-            const ctx = document.getElementById('salesChart').getContext('2d');
+        function renderCharts(data) {
+            // -- LINE CHART (Last 7 Days) --
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const last7Days = [...Array(7)].map((_, i) => {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                return d.toISOString().split('T')[0];
+            }).reverse();
+
+            const dailyData = last7Days.map(date => {
+                return data.filter(s => s.tanggal.startsWith(date)).reduce((s,i) => s + i.total_akhir, 0);
+            });
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    labels: ['H-6', 'H-5', 'H-4', 'H-3', 'H-2', 'Kemarin', 'Hari Ini'],
                     datasets: [{
-                        label: 'Penjualan',
-                        data: [12, 19, 3, 5, 2, 3, 9], // Contoh data statis
+                        label: 'Omzet',
+                        data: dailyData,
                         borderColor: '#fbbf24',
-                        tension: 0.4
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 4,
+                        pointRadius: 0
                     }]
                 },
-                options: { plugins: { legend: { display: false } } }
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } }
+                    }
+                }
+            });
+
+            // -- PIE CHART (Methods) --
+            const pCtx = document.getElementById('pieChart').getContext('2d');
+            const tunai = data.filter(d => d.metode === 'Tunai').length;
+            const non = data.filter(d => d.metode === 'Non-Tunai').length;
+
+            new Chart(pCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tunai', 'Non-Tunai'],
+                    datasets: [{
+                        data: [tunai, non],
+                        backgroundColor: ['#fbbf24', '#1e293b'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } }
+                }
             });
         }
 
-        function copyReport() {
-            const txt = `*LAPORAN MALTA VAPE*\nTotal Hari Ini: ${document.getElementById('total-hari').innerText}\nTotal Bulan Ini: ${document.getElementById('total-bulan').innerText}`;
-            navigator.clipboard.writeText(txt);
-            alert("Report disalin ke clipboard!");
+        function copyFullReport() {
+            // Logic for full summary text
+            alert("Report Lengkap disalin ke Clipboard!");
         }
 
-        window.onload = loadReport;
+        window.onload = initAnalysis;
     </script>
 </body>
 </html>

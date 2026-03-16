@@ -5,67 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi - Malta Vape</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #020617; color: #f8fafc; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
         .gold-text { color: #fbbf24; }
+        .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
+        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .btn-status:active { transform: scale(0.95); transition: 0.1s; }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); } 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); } }
+        .active-pulse { animation: pulse-gold 2s infinite; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-6">
-    <h1 class="text-2xl font-bold gold-text mb-2">ABSENSI PEKERJA</h1>
-    <p class="text-gray-500 text-sm mb-8">Malta Vape Store System</p>
+<body class="pb-10">
 
-    <div class="bg-slate-900 p-8 rounded-3xl border border-gray-800 text-center shadow-2xl">
-        <div id="clock" class="text-3xl font-mono mb-6">00:00:00</div>
-        
-        <div class="grid grid-cols-1 gap-4">
-            <button onclick="absen('Masuk')" class="bg-emerald-600 p-4 rounded-2xl font-bold">MASUK KERJA</button>
-            <button onclick="absen('Keluar')" class="bg-rose-600 p-4 rounded-2xl font-bold">PULANG / CLOSE</button>
-            <button onclick="absen('Libur')" class="bg-slate-700 p-4 rounded-2xl font-bold">SET LIBUR</button>
+    <div class="p-6 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-900 border border-slate-800 text-amber-500">←</a>
+            <div>
+                <h1 class="text-xl font-black gold-text tracking-tighter uppercase">Presensi Kerja</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Malta Vape Store</p>
+            </div>
+        </div>
+        <button onclick="sendAbsenReport()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-lg">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
+    </div>
+
+    <div class="px-6 mb-8 text-center">
+        <div class="glass-card py-10 rounded-[3rem] border-amber-500/20 active-pulse">
+            <h2 id="digital-clock" class="text-5xl font-black tracking-tighter mb-2">00:00</h2>
+            <p id="current-date" class="text-xs text-gray-500 uppercase tracking-[0.3em]"></p>
         </div>
     </div>
 
-    <div class="mt-10">
-        <h3 class="text-sm font-bold mb-4 uppercase text-gray-500">Riwayat 3 Hari Terakhir</h3>
-        <div id="absensi-list" class="space-y-3">
-            </div>
+    <div class="px-6 grid grid-cols-1 gap-4 mb-10">
+        <button onclick="prosesAbsen('MASUK')" class="btn-status bg-emerald-600 p-5 rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-3">
+            <span>🟢</span> MULAI KERJA (CHECK-IN)
+        </button>
+        <button onclick="prosesAbsen('PULANG')" class="btn-status bg-rose-600 p-5 rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-lg shadow-rose-900/20 flex items-center justify-center gap-3">
+            <span>🔴</span> SELESAI KERJA (CHECK-OUT)
+        </button>
+        <button onclick="prosesAbsen('LIBUR')" class="btn-status bg-slate-800 p-5 rounded-[2rem] font-black text-xs uppercase tracking-widest border border-slate-700 flex items-center justify-center gap-3">
+            <span>💤</span> SET STATUS LIBUR
+        </button>
     </div>
+
+    <div class="px-6 mb-4 flex gap-3 overflow-x-auto no-scrollbar">
+        <div class="min-w-[140px] glass-card p-4 rounded-2xl">
+            <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Total Masuk</p>
+            <h3 id="count-masuk" class="text-xl font-black">0 Hari</h3>
+        </div>
+        <div class="min-w-[140px] glass-card p-4 rounded-2xl">
+            <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Total Libur</p>
+            <h3 id="count-libur" class="text-xl font-black">0 Hari</h3>
+        </div>
+    </div>
+
+    <div class="px-6">
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Riwayat Absensi Terakhir</h3>
+        <div id="absensi-list" class="space-y-3">
+            <div class="py-10 text-center opacity-30 text-xs italic font-bold uppercase">Menarik Data Riwayat...</div>
+        </div>
+    </div>
+
+    <div id="toast-box" class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] w-full px-10"></div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+        let historyAbsen = [];
 
-        async function absen(status) {
+        // 1. Digital Clock
+        function updateClock() {
             const now = new Date();
-            const data = [Date.now(), now.toLocaleDateString(), now.toLocaleTimeString(), status, '-'];
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ target: 'absensi', data: data })
-            });
-            alert("Absensi " + status + " Berhasil dicatat!");
-            loadAbsensi();
+            document.getElementById('digital-clock').innerText = timeStr.replace(/\./g, ':');
+            document.getElementById('current-date').innerText = dateStr;
         }
 
+        // 2. Fetch Data
         async function loadAbsensi() {
-            const resp = await fetch(API_URL + "?page=absensi");
-            const data = await resp.json();
+            try {
+                const resp = await fetch(API_URL + "?page=absensi");
+                historyAbsen = await resp.json();
+                renderAbsensi();
+            } catch (e) {
+                showToast("❌ Gagal sinkron data!");
+            }
+        }
+
+        function renderAbsensi() {
             const list = document.getElementById('absensi-list');
             list.innerHTML = '';
             
-            data.slice(-3).reverse().forEach(a => {
+            // Statistik
+            const thisMonth = new Date().getMonth();
+            const masukCount = historyAbsen.filter(a => a.status === 'MASUK' || a.status === 'PULANG').length / 2; // Estimasi 2 absen per hari
+            const liburCount = historyAbsen.filter(a => a.status === 'LIBUR').length;
+
+            document.getElementById('count-masuk').innerText = Math.ceil(masukCount) + " Hari";
+            document.getElementById('count-libur').innerText = liburCount + " Hari";
+
+            // List Riwayat (Tampilkan 10 terakhir)
+            historyAbsen.slice(-10).reverse().forEach(a => {
+                const isMasuk = a.status === 'MASUK';
+                const isLibur = a.status === 'LIBUR';
+                
                 list.innerHTML += `
-                    <div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center border border-gray-800">
+                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 ${isLibur ? 'border-l-slate-600' : isMasuk ? 'border-l-emerald-500' : 'border-l-rose-500'}">
                         <div>
-                            <div class="text-xs text-gray-500">${a.tanggal}</div>
-                            <div class="font-bold">${a.status}</div>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase">${a.tanggal}</p>
+                            <h4 class="text-xs font-black uppercase tracking-tight ${isLibur ? 'text-gray-400' : 'text-white'}">${a.status}</h4>
                         </div>
-                        <div class="text-amber-500 font-mono text-sm">${a.jam_masuk}</div>
+                        <div class="text-right">
+                            <p class="text-xs font-mono font-bold text-amber-500">${a.jam_masuk}</p>
+                        </div>
                     </div>
                 `;
             });
         }
 
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        window.onload = loadAbsensi;
+        // 3. Proses Absen (Check-in/Out/Libur)
+        async function prosesAbsen(status) {
+            const now = new Date();
+            // Format waktu & tanggal agar tidak jadi 1899
+            const tglStr = now.toLocaleDateString('id-ID', { day:'2-digit', month:'2-digit', year:'numeric' });
+            const jamStr = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+
+            const data = [
+                Date.now(),
+                tglStr,
+                jamStr,
+                "-", // jam_keluar (bisa diupdate nanti)
+                status
+            ];
+
+            showToast(`⏳ Mencatat status ${status}...`);
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ target: 'absensi', data: data })
+                });
+                showToast(`✅ Absen ${status} Berhasil!`);
+                loadAbsensi();
+            } catch (e) {
+                showToast("❌ Gagal mengirim data!");
+            }
+        }
+
+        // 4. Kirim Laporan WA ke Bos
+        function sendAbsenReport() {
+            const m = document.getElementById('count-masuk').innerText;
+            const l = document.getElementById('count-libur').innerText;
+            const report = `*LAPORAN ABSENSI - MALTA VAPE*\n---\nTotal Masuk: ${m}\nTotal Libur: ${l}\n---\n_Dikirim otomatis via Malta System_`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(report)}`);
+        }
+
+        function showToast(m) {
+            const b = document.getElementById('toast-box'), e = document.createElement('div');
+            e.className = 'bg-slate-900/90 backdrop-blur-md border-l-4 border-amber-500 p-4 rounded-xl shadow-2xl mb-2 text-[10px] font-bold text-center';
+            e.innerText = m; b.appendChild(e);
+            setTimeout(() => e.remove(), 3000);
+        }
+
+        window.onload = () => {
+            loadAbsensi();
+            setInterval(updateClock, 1000);
+            updateClock();
+        };
     </script>
 </body>
 </html>

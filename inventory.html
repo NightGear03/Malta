@@ -3,129 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Item - Malta Vape</title>
+    <title>Gudang - Malta Vape</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #020617; color: #f8fafc; font-family: sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
         .gold-text { color: #fbbf24; }
-        .bg-deep-blue { background-color: #0f172a; }
         .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
-        input, select { background: #1e293b; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; outline: none; }
-        input:focus { border-color: #fbbf24; }
+        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        input, select { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-item { animation: fadeIn 0.3s ease forwards; }
     </style>
 </head>
-<body class="p-5 pb-24">
+<body class="pb-24">
 
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-xl font-bold gold-text uppercase">📦 Stock Management</h1>
-        <a href="index.html" class="text-xs bg-slate-800 px-3 py-1 rounded-full text-gray-400">Kembali</a>
-    </div>
-
-    <div class="bg-deep-blue p-6 rounded-3xl border border-gray-800 mb-8 shadow-xl">
-        <h2 class="text-sm font-bold mb-4 flex items-center">
-            <span class="mr-2">➕</span> Tambah Item Baru
-        </h2>
-        <div class="grid grid-cols-1 gap-3">
-            <input type="text" id="nama" placeholder="Nama Item (Contoh: Oxva Xlim Pro)">
-            <div class="grid grid-cols-2 gap-2">
-                <select id="kategori">
-                    <option value="POD">POD</option>
-                    <option value="MOD">MOD</option>
-                    <option value="LIQUID">LIQUID</option>
-                    <option value="CARTRIDGE">CARTRIDGE</option>
-                    <option value="OTHER">OTHER</option>
-                </select>
-                <input type="text" id="merk" placeholder="Merk (Contoh: Oxva)">
-            </div>
-            <input type="text" id="sub_kategori" placeholder="Sub-Kategori (Contoh: Saltnic)">
-            <div class="grid grid-cols-2 gap-2">
-                <input type="number" id="stok" placeholder="Jumlah Stok">
-                <input type="number" id="harga" placeholder="Harga Jual">
-            </div>
-            <button onclick="simpanItem()" id="btn-simpan" class="btn-gold p-3 rounded-xl font-bold mt-2 shadow-lg">SIMPAN KE DATABASE</button>
+    <div class="p-6 flex justify-between items-start">
+        <div>
+            <h1 class="text-2xl font-black gold-text tracking-tighter uppercase">Gudang Utama</h1>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest" id="item-count">Memuat data...</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="sendWAReport()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 active:scale-90 transition-all">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </button>
+            <a href="index.html" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-gray-500">✕</a>
         </div>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-            <thead class="text-gray-500 uppercase border-b border-gray-800">
-                <tr>
-                    <th class="py-2">Item</th>
-                    <th class="py-2">Stok</th>
-                    <th class="py-2">Harga</th>
-                </tr>
-            </thead>
-            <tbody id="item-list">
-                <tr><td colspan="3" class="text-center py-10 text-gray-600">Memuat data...</td></tr>
-            </tbody>
-        </table>
+    <div class="px-6 flex gap-3 mb-6 overflow-x-auto no-scrollbar">
+        <div class="min-w-[120px] glass-card p-4 rounded-3xl border-l-4 border-l-amber-500">
+            <p class="text-[8px] text-gray-500 font-bold uppercase mb-1">Stok Tipis</p>
+            <h3 id="stat-low" class="text-lg font-black text-rose-500">0</h3>
+        </div>
+        <div class="min-w-[150px] glass-card p-4 rounded-3xl">
+            <p class="text-[8px] text-gray-500 font-bold uppercase mb-1">Estimasi Aset</p>
+            <h3 id="stat-value" class="text-sm font-black gold-text tracking-tighter">Rp 0</h3>
+        </div>
     </div>
+
+    <div class="px-6 mb-6 flex gap-2">
+        <input type="text" id="invSearch" onkeyup="renderInventory()" placeholder="Cari item gudang..." class="flex-1 p-4 rounded-2xl text-xs outline-none glass-card border-none">
+        <button onclick="toggleForm()" class="w-14 h-14 btn-gold rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-all">
+            <span id="toggle-icon" class="text-xl font-bold">+</span>
+        </button>
+    </div>
+
+    <div id="form-container" class="px-6 overflow-hidden max-h-0 transition-all duration-500 ease-in-out mb-0">
+        <div class="glass-card p-6 rounded-[2.5rem] border border-amber-500/20 mb-6 shadow-2xl">
+            <div class="space-y-3">
+                <input type="text" id="nama" placeholder="Nama Produk" class="w-full p-4 rounded-xl text-xs">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="kategori" class="p-4 rounded-xl text-xs font-bold">
+                        <option value="POD">POD</option>
+                        <option value="MOD">MOD</option>
+                        <option value="LIQUID">LIQUID</option>
+                        <option value="CARTRIDGE">CARTRIDGE</option>
+                        <option value="OTHER">OTHER</option>
+                    </select>
+                    <input type="text" id="merk" placeholder="Merk" class="w-full p-4 rounded-xl text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="stok" placeholder="Stok" class="p-4 rounded-xl text-xs">
+                    <input type="number" id="harga" placeholder="Harga" class="p-4 rounded-xl text-xs">
+                </div>
+                <button onclick="simpanItem()" id="btn-save" class="w-full btn-gold py-4 rounded-2xl font-black text-xs shadow-lg uppercase">Simpan Barang</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-6 space-y-3" id="inventory-list">
+        <div class="text-center py-20 opacity-30 text-xs italic">Menyambungkan ke Gudang...</div>
+    </div>
+
+    <div id="toast-box" class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] w-full px-10"></div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+        let inventoryData = [];
 
-        // 1. FUNGSI AMBIL DATA (GET)
-        async function loadItems() {
+        async function fetchInventory() {
             try {
-                const response = await fetch(API_URL + "?page=items");
-                const data = await response.json();
-                const container = document.getElementById('item-list');
-                container.innerHTML = '';
+                const resp = await fetch(API_URL + "?page=items");
+                inventoryData = await resp.json();
+                renderInventory();
+                updateStats();
+            } catch (e) { showToast("❌ Database Error!"); }
+        }
 
-                data.forEach(item => {
-                    container.innerHTML += `
-                        <tr class="border-b border-gray-900">
-                            <td class="py-3">
-                                <div class="font-bold">${item.nama}</div>
-                                <div class="text-[10px] text-gray-500">${item.merk} - ${item.kategori}</div>
-                            </td>
-                            <td class="py-3 font-mono text-amber-500">${item.stok}</td>
-                            <td class="py-3 font-bold text-white">Rp ${parseInt(item.harga).toLocaleString()}</td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                console.error("Gagal ambil data:", err);
+        function renderInventory() {
+            const list = document.getElementById('inventory-list');
+            const search = document.getElementById('invSearch').value.toLowerCase();
+            list.innerHTML = '';
+
+            const filtered = inventoryData.filter(i => 
+                i.nama.toLowerCase().includes(search) || i.merk.toLowerCase().includes(search)
+            );
+
+            document.getElementById('item-count').innerText = `${filtered.length} Jenis Produk Terdaftar`;
+
+            filtered.reverse().forEach((item, idx) => {
+                const isLow = parseInt(item.stok) < 5;
+                list.innerHTML += `
+                    <div class="glass-card p-5 rounded-[2.2rem] flex flex-col gap-4 animate-item" style="animation-delay: ${idx * 0.05}s">
+                        <div class="flex justify-between items-start">
+                            <div class="w-3/4">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[8px] font-bold text-amber-500 uppercase tracking-widest">${item.merk}</span>
+                                    ${isLow ? '<span class="text-[7px] bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full font-bold">LOW STOCK</span>' : ''}
+                                </div>
+                                <h3 class="text-xs font-bold truncate">${item.nama}</h3>
+                                <p class="text-[10px] text-gray-500 font-bold mt-0.5">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                            </div>
+                            <button onclick="hapusItem('${item.id}', '${item.nama}')" class="text-rose-900/40 active:text-rose-500 transition-colors p-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14V4zM6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-center bg-black/20 p-2 rounded-2xl border border-white/5">
+                            <span class="text-[9px] text-gray-500 font-bold ml-2 uppercase">Atur Stok</span>
+                            <div class="flex items-center gap-4">
+                                <button onclick="quickUpdate('${item.id}', -1)" class="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-xl font-bold text-amber-500 active:scale-90">-</button>
+                                <span class="text-xs font-black w-6 text-center ${isLow ? 'text-rose-500 animate-pulse' : 'text-white'}">${item.stok}</span>
+                                <button onclick="quickUpdate('${item.id}', 1)" class="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-xl font-bold text-amber-500 active:scale-90">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function quickUpdate(id, delta) {
+            const item = inventoryData.find(i => i.id == id);
+            if(!item) return;
+            const newStok = parseInt(item.stok) + delta;
+            if(newStok < 0) return;
+            showToast(`⏳ Update ${item.nama}...`);
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'items', action: 'UPDATE', id: id, data: [id, item.nama, item.kategori, '', item.merk, newStok, item.harga] }) });
+            fetchInventory();
+        }
+
+        async function hapusItem(id, nama) {
+            const yakin = confirm(`Hapus permanen ${nama} dari gudang?`);
+            if(!yakin) return;
+            showToast(`🗑️ Menghapus ${nama}...`);
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'items', action: 'DELETE', id: id }) });
+            showToast("✅ Berhasil Dihapus!");
+            fetchInventory();
+        }
+
+        function sendWAReport() {
+            let msg = `*LAPORAN STOK MALTA VAPE*\n---\n`;
+            inventoryData.forEach(i => msg += `• ${i.nama}: ${i.stok} pcs\n`);
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+        }
+
+        function updateStats() {
+            document.getElementById('stat-low').innerText = inventoryData.filter(i => parseInt(i.stok) < 5).length + " Item";
+            const val = inventoryData.reduce((s,i) => s + (parseInt(i.harga) * parseInt(i.stok)), 0);
+            document.getElementById('stat-value').innerText = "Rp " + val.toLocaleString();
+        }
+
+        function toggleForm() {
+            const c = document.getElementById('form-container');
+            const icon = document.getElementById('toggle-icon');
+            if(c.style.maxHeight === '0px' || !c.style.maxHeight) {
+                c.style.maxHeight = '600px'; c.style.marginBottom = '24px'; icon.innerText = '−';
+            } else {
+                c.style.maxHeight = '0px'; c.style.marginBottom = '0px'; icon.innerText = '+';
             }
         }
 
-        // 2. FUNGSI SIMPAN DATA (POST)
         async function simpanItem() {
-            const btn = document.getElementById('btn-simpan');
-            const itemData = [
-                Date.now(), // ID unik
-                document.getElementById('nama').value,
-                document.getElementById('kategori').value,
-                document.getElementById('sub_kategori').value,
-                document.getElementById('merk').value,
-                document.getElementById('stok').value,
-                document.getElementById('harga').value
-            ];
-
-            if(!itemData[1] || !itemData[5]) return alert("Nama dan Stok wajib diisi!");
-
-            btn.innerText = "⏳ Memproses...";
-            btn.disabled = true;
-
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        target: 'items',
-                        data: itemData
-                    })
-                });
-                alert("Barang Berhasil Ditambah!");
-                location.reload(); // Refresh halaman untuk lihat hasil
-            } catch (err) {
-                alert("Gagal simpan!");
-                btn.innerText = "SIMPAN KE DATABASE";
-                btn.disabled = false;
-            }
+            const data = [Date.now(), document.getElementById('nama').value, document.getElementById('kategori').value, '', document.getElementById('merk').value, document.getElementById('stok').value, document.getElementById('harga').value];
+            if(!data[1]) return showToast("⚠️ Isi Nama!");
+            showToast("⏳ Menyimpan...");
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'items', data: data }) });
+            showToast("✅ Berhasil!"); fetchInventory(); toggleForm();
         }
 
-        // Jalankan saat halaman dibuka
-        window.onload = loadItems;
+        function showToast(m) {
+            const b = document.getElementById('toast-box'), e = document.createElement('div');
+            e.className = 'bg-slate-900 border-l-4 border-amber-500 p-4 rounded-xl shadow-2xl mb-2 text-[10px] font-bold text-center';
+            e.innerText = m; b.appendChild(e);
+            setTimeout(() => e.remove(), 3000);
+        }
+
+        window.onload = fetchInventory;
     </script>
 </body>
 </html>

@@ -3,123 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir - Malta Vape</title>
+    <title>POS Kasir - Malta Vape</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #020617; color: #f8fafc; font-family: sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
         .gold-text { color: #fbbf24; }
-        .bg-deep-blue { background-color: #0f172a; }
         .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
-        .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #1e293b; display: flex; justify-content: space-around; padding: 12px; z-index: 100; }
+        .card-active:active { transform: scale(0.96); transition: 0.1s; }
+        #toast-box { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 80%; max-width: 300px; }
+        @keyframes slide-in { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-in { animation: slide-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="pb-64">
-    <div class="p-4 flex justify-between items-center border-b border-gray-800">
-        <h1 class="font-bold gold-text">MALTA <span class="text-white">KASIR</span></h1>
-        <span id="clock" class="text-[10px] text-gray-500"></span>
-    </div>
+<body class="pb-80">
 
-    <div class="p-4">
-        <input type="text" id="search" onkeyup="renderItems()" placeholder="Cari Nama Item/Merk..." class="w-full bg-deep-blue border border-gray-700 rounded-xl p-3 mb-4 outline-none focus:border-amber-500">
-        
-        <div id="filter-container" class="flex gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar text-xs">
-            <button onclick="filterCat('ALL')" class="bg-amber-500 text-black px-4 py-2 rounded-full font-bold">SEMUA</button>
-            <button onclick="filterCat('POD')" class="bg-slate-800 px-4 py-2 rounded-full">POD</button>
-            <button onclick="filterCat('MOD')" class="bg-slate-800 px-4 py-2 rounded-full">MOD</button>
-            <button onclick="filterCat('LIQUID')" class="bg-slate-800 px-4 py-2 rounded-full">LIQUID</button>
-        </div>
-
-        <div id="item-grid" class="grid grid-cols-2 gap-3">
-            </div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-amber-500/30 p-5 rounded-t-3xl shadow-2xl z-50">
-        <div class="flex justify-between items-center mb-3 text-xs uppercase text-gray-400">
-            <span>Metode: <b id="metode-label" class="text-white">TUNAI</b></span>
-            <span>Diskon: <input type="number" id="diskon" oninput="kalkulasi()" class="w-16 bg-transparent border-b border-gray-600 text-right text-amber-500 outline-none" value="0"></span>
-        </div>
-        <div class="flex justify-between items-end mb-4">
-            <h3 class="text-3xl font-black gold-text" id="total-display">Rp 0</h3>
-            <div class="flex gap-1">
-                <button onclick="setMetode('Tunai')" class="bg-slate-800 p-2 rounded text-[10px]">💵</button>
-                <button onclick="setMetode('Non-Tunai')" class="bg-slate-800 p-2 rounded text-[10px]">💳</button>
+    <div class="sticky top-0 z-40 bg-[#020617]/80 backdrop-blur-md p-4">
+        <div class="flex justify-between items-center mb-4">
+            <button onclick="goBack()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800">
+                <span class="text-amber-500">←</span>
+            </button>
+            <h1 class="font-extrabold text-lg gold-text tracking-tighter">MALTA <span class="text-white">POS</span></h1>
+            <div class="flex gap-2">
+                <button onclick="openExpenseModal()" class="text-[9px] bg-rose-500/10 text-rose-500 px-3 py-1 rounded-full border border-rose-500/20 font-bold uppercase tracking-widest">Biaya</button>
+                <button onclick="showClosing()" class="text-[9px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-bold uppercase tracking-widest">Closing</button>
             </div>
         </div>
-        <button onclick="checkout()" class="w-full btn-gold p-4 rounded-2xl font-bold shadow-lg">PROSES & KIRIM WA</button>
+        <input type="text" id="globalSearch" onkeyup="handleSearch()" placeholder="Cari item atau merk..." 
+               class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm focus:outline-none focus:border-amber-500 shadow-inner">
     </div>
+
+    <div class="px-4 py-2 flex items-center text-[10px] uppercase tracking-widest text-gray-500 font-bold" id="path-status">Menu Utama</div>
+
+    <div id="grid-container" class="grid grid-cols-2 gap-3 p-4"></div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-amber-500/20 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.6)] z-50 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">Keranjang</span>
+            <button onclick="clearCart()" class="text-[10px] text-rose-500 font-bold">KOSONGKAN</button>
+        </div>
+        <div id="cart-list" class="max-h-40 overflow-y-auto mb-4 no-scrollbar space-y-3">
+            <p class="text-center text-gray-600 text-xs py-4 italic">Belum ada item terpilih...</p>
+        </div>
+        <div class="border-t border-slate-800 pt-4 mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-400 text-xs">Metode:</span>
+                <select id="pay-method" class="bg-transparent text-xs font-bold text-amber-500 focus:outline-none">
+                    <option value="Tunai">💵 TUNAI</option>
+                    <option value="Non-Tunai">💳 NON-TUNAI</option>
+                </select>
+            </div>
+            <div class="flex justify-between items-end">
+                <h3 class="text-3xl font-black gold-text" id="grand-total">Rp 0</h3>
+                <button onclick="processCheckout()" class="btn-gold px-8 py-3 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all">CHECKOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expense-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeExpenseModal()"></div>
+        <div class="relative bg-slate-900 border border-rose-500/30 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl scale-90 opacity-0 transition-all duration-300" id="ex-modal-content">
+            <h2 class="text-xl font-extrabold text-rose-500 mb-6 uppercase">Catat Pengeluaran</h2>
+            <div class="space-y-4 mb-6">
+                <input type="text" id="ex-desc" placeholder="Keterangan (misal: Listrik)" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-xs outline-none focus:border-rose-500">
+                <input type="number" id="ex-amount" placeholder="Jumlah (Rp)" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-xs outline-none focus:border-rose-500">
+            </div>
+            <button onclick="saveExpense()" class="w-full bg-rose-600 py-4 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all">SIMPAN BIAYA</button>
+        </div>
+    </div>
+
+    <div id="closing-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeClosingModal()"></div>
+        <div class="relative bg-slate-900 border border-amber-500/30 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl scale-90 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-extrabold gold-text uppercase">Laporan Closing</h2>
+                <p id="modal-date" class="text-[10px] text-gray-500 uppercase tracking-widest mt-1"></p>
+            </div>
+            <div class="space-y-4 mb-8 text-[11px] font-bold">
+                <div class="flex justify-between border-b border-slate-800 pb-2 text-gray-400"><span>PENJUALAN</span><span id="modal-sales" class="text-white">Rp 0</span></div>
+                <div class="flex justify-between border-b border-slate-800 pb-2 text-rose-400"><span>PENGELUARAN</span><span id="modal-expense">Rp 0</span></div>
+                <div class="flex justify-between pt-2 text-amber-500 text-sm font-black italic"><span>SALDO BERSIH</span><span id="modal-total">Rp 0</span></div>
+            </div>
+            <button id="btn-wa-closing" class="btn-gold w-full py-4 rounded-2xl font-black text-xs shadow-lg">KIRIM WHATSAPP</button>
+            <button onclick="closeClosingModal()" class="w-full py-4 text-[9px] text-gray-500 font-bold uppercase">Tutup</button>
+        </div>
+    </div>
+
+    <div id="toast-box"></div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
-        let allItems = [];
-        let cart = [];
-        let currentCat = 'ALL';
-        let selectedMetode = 'Tunai';
+        let allItems = [], cart = [], viewState = { level: 'cat', cat: '', sub: '' };
 
-        async function fetchItems() {
-            const resp = await fetch(API_URL + "?page=items");
-            allItems = await resp.json();
-            renderItems();
+        async function init() {
+            try {
+                const resp = await fetch(API_URL + "?page=items");
+                allItems = await resp.json();
+                renderCategories();
+            } catch (e) { showToast("Gagal memuat data!"); }
         }
 
-        function renderItems() {
-            const grid = document.getElementById('item-grid');
-            const search = document.getElementById('search').value.toLowerCase();
-            grid.innerHTML = '';
+        // --- NAVIGATION & SEARCH ---
+        function renderCategories() {
+            viewState = { level: 'cat' }; updatePath("Menu Utama");
+            const cats = [...new Set(allItems.map(i => i.kategori))];
+            document.getElementById('grid-container').innerHTML = cats.map(c => `
+                <div onclick="selectCategory('${c}')" class="bg-slate-900 p-6 rounded-3xl border border-slate-800 text-center card-active shadow-xl">
+                    <div class="text-2xl mb-2">${getEmoji(c)}</div><div class="text-xs font-bold uppercase">${c}</div>
+                </div>`).join('');
+        }
+
+        function selectCategory(cat) {
+            viewState.cat = cat;
+            const subs = [...new Set(allItems.filter(i => i.kategori === cat && i.sub_kategori).map(i => i.sub_kategori))];
+            if (subs.length > 0) {
+                viewState.level = 'sub'; updatePath(cat);
+                document.getElementById('grid-container').innerHTML = subs.map(s => `
+                    <div onclick="selectSub('${s}')" class="bg-slate-900 p-6 rounded-3xl border border-slate-800 text-center card-active shadow-xl border-l-4 border-l-amber-500">
+                        <div class="text-xs font-bold uppercase text-amber-500">${s}</div>
+                    </div>`).join('');
+            } else { renderItems(cat, ''); }
+        }
+
+        function selectSub(sub) { viewState.sub = sub; renderItems(viewState.cat, sub); }
+
+        function renderItems(cat, sub) {
+            viewState.level = 'item'; updatePath(`${cat} > ${sub || 'All'}`);
+            const filtered = allItems.filter(i => i.kategori === cat && (!sub || i.sub_kategori === sub));
+            document.getElementById('grid-container').innerHTML = filtered.map(i => `
+                <div onclick="addToCart('${i.nama}', ${i.harga}, '${i.stok}')" class="bg-slate-900 p-4 rounded-3xl border border-slate-800 card-active relative overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-amber-500/10 text-amber-500 text-[8px] px-2 py-0.5 rounded-full font-bold">STOK: ${i.stok}</div>
+                    <div class="text-[9px] text-gray-500 font-bold uppercase mt-2">${i.merk}</div>
+                    <div class="text-xs font-bold truncate mb-3">${i.nama}</div>
+                    <div class="text-xs font-black gold-text">Rp ${parseInt(i.harga).toLocaleString()}</div>
+                </div>`).join('');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('globalSearch').value.toLowerCase();
+            if(!query) { renderCategories(); return; }
+            const filtered = allItems.filter(i => i.nama.toLowerCase().includes(query) || i.merk.toLowerCase().includes(query));
+            document.getElementById('grid-container').innerHTML = filtered.map(i => `
+                <div onclick="addToCart('${i.nama}', ${i.harga}, '${i.stok}')" class="bg-slate-900 p-4 rounded-3xl border border-slate-800 card-active relative">
+                    <div class="text-[9px] text-gray-500 font-bold uppercase">${i.merk}</div>
+                    <div class="text-xs font-bold truncate mb-2">${i.nama}</div>
+                    <div class="text-xs font-black gold-text">Rp ${parseInt(i.harga).toLocaleString()}</div>
+                </div>`).join('');
+        }
+
+        // --- CART SYSTEM ---
+        function addToCart(nama, harga, stok) {
+            if(parseInt(stok) <= 0) return showToast("⚠️ Stok Habis!");
+            const existing = cart.find(c => c.nama === nama);
+            if(existing) existing.qty++; else cart.push({ nama, harga, qty: 1, diskon: 0 });
+            showToast("✨ Ditambah: " + nama); updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cart-list');
+            if(cart.length === 0) { list.innerHTML = `<p class="text-center text-gray-600 text-xs py-4 italic">Kosong...</p>`; document.getElementById('grand-total').innerText = "Rp 0"; return; }
+            let total = 0;
+            list.innerHTML = cart.map((item, index) => {
+                const nett = (item.harga * item.qty) - item.diskon; total += nett;
+                return `<div class="bg-slate-900/50 p-3 rounded-2xl border border-slate-800 flex justify-between items-center text-[10px]">
+                    <div class="w-1/2"><p class="font-bold truncate uppercase">${item.nama}</p>
+                    <div class="flex items-center gap-2 mt-1"><span class="text-gray-500 font-bold">DISC:</span>
+                    <input type="number" oninput="applyItemDisc(${index}, this.value)" value="${item.diskon}" class="bg-transparent border-b border-gray-700 w-12 text-amber-500 outline-none"></div></div>
+                    <div class="flex items-center gap-3"><div class="flex items-center bg-slate-800 rounded-full px-2 py-1">
+                    <button onclick="updateQty(${index}, -1)" class="text-amber-500 px-2">-</button><span class="font-bold">${item.qty}</span>
+                    <button onclick="updateQty(${index}, 1)" class="text-amber-500 px-2">+</button></div><p class="font-black w-16 text-right font-mono">Rp ${nett.toLocaleString()}</p></div></div>`;
+            }).join('');
+            document.getElementById('grand-total').innerText = "Rp " + total.toLocaleString();
+        }
+
+        function updateQty(i, d) { cart[i].qty += d; if(cart[i].qty <= 0) cart.splice(i,1); updateCartUI(); }
+        function applyItemDisc(i, v) { cart[i].diskon = parseInt(v) || 0; updateCartUI(); }
+
+        async function processCheckout() {
+            if(cart.length === 0) return showToast("⚠️ Keranjang kosong!");
+            const total = cart.reduce((s, i) => s + (i.harga * i.qty - i.diskon), 0);
+            const diskon = cart.reduce((s, i) => s + i.diskon, 0);
+            const items = cart.map(i => `${i.nama} (x${i.qty})`).join(", ");
+            const method = document.getElementById('pay-method').value;
+            showToast("⏳ Menyimpan...");
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'penjualan', data: [Date.now(), new Date().toISOString(), items, total + diskon, diskon, total, method] }) });
+            let msg = `*MALTA VAPE - NOTA*\n---\n${cart.map(i => `• ${i.nama} x${i.qty}`).join('\n')}\n---\n*TOTAL: Rp ${total.toLocaleString()}*\nMetode: ${method}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`); clearCart(); showToast("✅ Berhasil!");
+        }
+
+        // --- EXPENSE & CLOSING ---
+        function openExpenseModal() { document.getElementById('expense-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('ex-modal-content').classList.add('scale-100','opacity-100'),10); }
+        function closeExpenseModal() { document.getElementById('ex-modal-content').classList.remove('scale-100','opacity-100'); setTimeout(()=>document.getElementById('expense-modal').classList.add('hidden'),300); }
+
+        async function saveExpense() {
+            const desc = document.getElementById('ex-desc').value;
+            const amount = document.getElementById('ex-amount').value;
+            if(!desc || !amount) return showToast("Isi data biaya!");
+            showToast("⏳ Menyimpan biaya...");
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'pengeluaran', data: [Date.now(), new Date().toISOString(), desc, amount] }) });
+            showToast("✅ Biaya Tercatat!"); closeExpenseModal();
+            document.getElementById('ex-desc').value = ''; document.getElementById('ex-amount').value = '';
+        }
+
+        async function showClosing() {
+            showToast("⏳ Menghitung...");
+            const [respP, respE] = await Promise.all([fetch(API_URL + "?page=penjualan"), fetch(API_URL + "?page=pengeluaran")]);
+            const sales = await respP.json(), expenses = await respE.json();
+            const today = new Date().toISOString().split('T')[0];
+            const dailySales = sales.filter(s => s.tanggal.startsWith(today)).reduce((s,i) => s + i.total_akhir, 0);
+            const dailyExp = expenses.filter(e => e.tanggal.startsWith(today)).reduce((s,i) => s + i.jumlah, 0);
             
-            const filtered = allItems.filter(i => {
-                const matchSearch = i.nama.toLowerCase().includes(search) || i.merk.toLowerCase().includes(search);
-                const matchCat = currentCat === 'ALL' || i.kategori === currentCat;
-                return matchSearch && matchCat;
-            });
+            document.getElementById('modal-date').innerText = today;
+            document.getElementById('modal-sales').innerText = "Rp " + dailySales.toLocaleString();
+            document.getElementById('modal-expense').innerText = "- Rp " + dailyExp.toLocaleString();
+            document.getElementById('modal-total').innerText = "Rp " + (dailySales - dailyExp).toLocaleString();
 
-            filtered.forEach(item => {
-                grid.innerHTML += `
-                    <div onclick="addToCart('${item.nama}', ${item.harga})" class="bg-deep-blue p-4 rounded-xl border border-gray-800 active:border-amber-500">
-                        <div class="text-[10px] text-gray-500 uppercase">${item.merk}</div>
-                        <div class="font-bold text-sm truncate">${item.nama}</div>
-                        <div class="text-amber-500 font-bold mt-2 text-xs">Rp ${parseInt(item.harga).toLocaleString()}</div>
-                    </div>
-                `;
-            });
-        }
-
-        function addToCart(nama, harga) {
-            cart.push({ nama, harga });
-            kalkulasi();
-        }
-
-        function kalkulasi() {
-            let sub = cart.reduce((s, i) => s + i.harga, 0);
-            let diskon = parseInt(document.getElementById('diskon').value) || 0;
-            document.getElementById('total-display').innerText = "Rp " + (sub - diskon).toLocaleString();
-        }
-
-        function setMetode(m) {
-            selectedMetode = m;
-            document.getElementById('metode-label').innerText = m.toUpperCase();
-        }
-
-        async function checkout() {
-            if(cart.length === 0) return alert("Pilih barang dulu!");
-            let diskon = document.getElementById('diskon').value || 0;
-            let total = cart.reduce((s, i) => s + i.harga, 0) - diskon;
+            const report = `*CLOSING MALTA VAPE*\nTanggal: ${today}\n---\nPenjualan: Rp ${dailySales.toLocaleString()}\nPengeluaran: Rp ${dailyExp.toLocaleString()}\n---\n*SALDO BERSIH: Rp ${(dailySales-dailyExp).toLocaleString()}*`;
+            document.getElementById('btn-wa-closing').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(report)}`);
             
-            // Format WA
-            let msg = `*MALTA VAPE STORE*\nTanggal: ${new Date().toLocaleDateString()}\n---\n`;
-            cart.forEach(c => msg += `- ${c.nama} (Rp ${c.harga.toLocaleString()})\n`);
-            msg += `---\nTotal: *Rp ${total.toLocaleString()}*\nMetode: ${selectedMetode}`;
-
-            // Simpan ke Sheet Penjualan
-            const dataRow = [Date.now(), new Date().toISOString(), cart.map(c => c.nama).join(", "), 0, diskon, total, selectedMetode];
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'penjualan', data: dataRow }) });
-
-            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-            location.reload();
+            document.getElementById('closing-modal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('modal-content').classList.remove('scale-90','opacity-0'); document.getElementById('modal-content').classList.add('scale-100','opacity-100'); }, 10);
         }
 
-        function filterCat(c) { currentCat = c; renderItems(); }
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleString(); }, 1000);
-        window.onload = fetchItems;
+        function closeClosingModal() { document.getElementById('modal-content').classList.add('scale-90','opacity-0'); setTimeout(()=>document.getElementById('closing-modal').classList.add('hidden'),300); }
+        function showToast(m) { const b = document.getElementById('toast-box'), e = document.createElement('div'); e.className = 'bg-slate-900/90 backdrop-blur-md border-l-4 border-amber-500 p-4 rounded-xl shadow-2xl mb-3 animate-slide-in'; e.innerHTML = `<span class="text-[10px] font-bold text-gray-200 uppercase">${m}</span>`; b.appendChild(e); setTimeout(()=> { e.style.opacity='0'; setTimeout(()=>e.remove(),500); }, 3000); }
+        function goBack() { if (viewState.level === 'item' && viewState.sub) selectCategory(viewState.cat); else if (viewState.level === 'item' || viewState.level === 'sub') renderCategories(); else window.location.href="index.html"; }
+        function updatePath(t) { document.getElementById('path-status').innerText = t; }
+        function getEmoji(c) { const e = {'POD':'📦','MOD':'🔋','LIQUID':'💧','CARTRIDGE':'🔌','OTHER':'🛠️'}; return e[c] || '✨'; }
+        function clearCart() { cart = []; updateCartUI(); }
+        window.onload = init;
     </script>
 </body>
 </html>
