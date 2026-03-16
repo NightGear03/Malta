@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report - Malta Vape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; }
+        .bg-card { background: #0f172a; border: 1px solid #1e293b; }
+        .gold-text { color: #fbbf24; }
+    </style>
+</head>
+<body class="p-5 pb-24">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-xl font-bold gold-text">SALES REPORT</h1>
+        <a href="index.html" class="text-xs text-gray-500">Back</a>
+    </div>
+
+    <div class="bg-card p-4 rounded-2xl mb-6">
+        <canvas id="salesChart"></canvas>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="bg-card p-4 rounded-2xl">
+            <p class="text-[10px] text-gray-500 uppercase">Bulan Ini</p>
+            <h2 id="total-bulan" class="text-lg font-bold">Rp 0</h2>
+        </div>
+        <div class="bg-card p-4 rounded-2xl">
+            <p class="text-[10px] text-gray-500 uppercase">Hari Ini</p>
+            <h2 id="total-hari" class="text-lg font-bold">Rp 0</h2>
+        </div>
+    </div>
+
+    <button onclick="copyReport()" class="w-full bg-amber-500 text-black font-bold p-4 rounded-xl shadow-lg">COPY TEXT REPORT</button>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+
+        async function loadReport() {
+            const resp = await fetch(API_URL + "?page=penjualan");
+            const data = await resp.json();
+            
+            let daily = 0;
+            let monthly = 0;
+            const today = new Date().toISOString().split('T')[0];
+            const thisMonth = today.slice(0, 7);
+
+            data.forEach(item => {
+                const itemDate = item.tanggal.split('T')[0];
+                if(itemDate === today) daily += item.total_akhir;
+                if(itemDate.startsWith(thisMonth)) monthly += item.total_akhir;
+            });
+
+            document.getElementById('total-hari').innerText = "Rp " + daily.toLocaleString();
+            document.getElementById('total-bulan').innerText = "Rp " + monthly.toLocaleString();
+
+            renderChart(data);
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    datasets: [{
+                        label: 'Penjualan',
+                        data: [12, 19, 3, 5, 2, 3, 9], // Contoh data statis
+                        borderColor: '#fbbf24',
+                        tension: 0.4
+                    }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+        }
+
+        function copyReport() {
+            const txt = `*LAPORAN MALTA VAPE*\nTotal Hari Ini: ${document.getElementById('total-hari').innerText}\nTotal Bulan Ini: ${document.getElementById('total-bulan').innerText}`;
+            navigator.clipboard.writeText(txt);
+            alert("Report disalin ke clipboard!");
+        }
+
+        window.onload = loadReport;
+    </script>
+</body>
+</html>

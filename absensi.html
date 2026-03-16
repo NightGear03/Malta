@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi - Malta Vape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; }
+        .gold-text { color: #fbbf24; }
+    </style>
+</head>
+<body class="p-6">
+    <h1 class="text-2xl font-bold gold-text mb-2">ABSENSI PEKERJA</h1>
+    <p class="text-gray-500 text-sm mb-8">Malta Vape Store System</p>
+
+    <div class="bg-slate-900 p-8 rounded-3xl border border-gray-800 text-center shadow-2xl">
+        <div id="clock" class="text-3xl font-mono mb-6">00:00:00</div>
+        
+        <div class="grid grid-cols-1 gap-4">
+            <button onclick="absen('Masuk')" class="bg-emerald-600 p-4 rounded-2xl font-bold">MASUK KERJA</button>
+            <button onclick="absen('Keluar')" class="bg-rose-600 p-4 rounded-2xl font-bold">PULANG / CLOSE</button>
+            <button onclick="absen('Libur')" class="bg-slate-700 p-4 rounded-2xl font-bold">SET LIBUR</button>
+        </div>
+    </div>
+
+    <div class="mt-10">
+        <h3 class="text-sm font-bold mb-4 uppercase text-gray-500">Riwayat 3 Hari Terakhir</h3>
+        <div id="absensi-list" class="space-y-3">
+            </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+
+        async function absen(status) {
+            const now = new Date();
+            const data = [Date.now(), now.toLocaleDateString(), now.toLocaleTimeString(), status, '-'];
+            
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ target: 'absensi', data: data })
+            });
+            alert("Absensi " + status + " Berhasil dicatat!");
+            loadAbsensi();
+        }
+
+        async function loadAbsensi() {
+            const resp = await fetch(API_URL + "?page=absensi");
+            const data = await resp.json();
+            const list = document.getElementById('absensi-list');
+            list.innerHTML = '';
+            
+            data.slice(-3).reverse().forEach(a => {
+                list.innerHTML += `
+                    <div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center border border-gray-800">
+                        <div>
+                            <div class="text-xs text-gray-500">${a.tanggal}</div>
+                            <div class="font-bold">${a.status}</div>
+                        </div>
+                        <div class="text-amber-500 font-mono text-sm">${a.jam_masuk}</div>
+                    </div>
+                `;
+            });
+        }
+
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+        window.onload = loadAbsensi;
+    </script>
+</body>
+</html>

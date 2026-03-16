@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir - Malta Vape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: sans-serif; }
+        .gold-text { color: #fbbf24; }
+        .bg-deep-blue { background-color: #0f172a; }
+        .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
+        .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #1e293b; display: flex; justify-content: space-around; padding: 12px; z-index: 100; }
+    </style>
+</head>
+<body class="pb-64">
+    <div class="p-4 flex justify-between items-center border-b border-gray-800">
+        <h1 class="font-bold gold-text">MALTA <span class="text-white">KASIR</span></h1>
+        <span id="clock" class="text-[10px] text-gray-500"></span>
+    </div>
+
+    <div class="p-4">
+        <input type="text" id="search" onkeyup="renderItems()" placeholder="Cari Nama Item/Merk..." class="w-full bg-deep-blue border border-gray-700 rounded-xl p-3 mb-4 outline-none focus:border-amber-500">
+        
+        <div id="filter-container" class="flex gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar text-xs">
+            <button onclick="filterCat('ALL')" class="bg-amber-500 text-black px-4 py-2 rounded-full font-bold">SEMUA</button>
+            <button onclick="filterCat('POD')" class="bg-slate-800 px-4 py-2 rounded-full">POD</button>
+            <button onclick="filterCat('MOD')" class="bg-slate-800 px-4 py-2 rounded-full">MOD</button>
+            <button onclick="filterCat('LIQUID')" class="bg-slate-800 px-4 py-2 rounded-full">LIQUID</button>
+        </div>
+
+        <div id="item-grid" class="grid grid-cols-2 gap-3">
+            </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-amber-500/30 p-5 rounded-t-3xl shadow-2xl z-50">
+        <div class="flex justify-between items-center mb-3 text-xs uppercase text-gray-400">
+            <span>Metode: <b id="metode-label" class="text-white">TUNAI</b></span>
+            <span>Diskon: <input type="number" id="diskon" oninput="kalkulasi()" class="w-16 bg-transparent border-b border-gray-600 text-right text-amber-500 outline-none" value="0"></span>
+        </div>
+        <div class="flex justify-between items-end mb-4">
+            <h3 class="text-3xl font-black gold-text" id="total-display">Rp 0</h3>
+            <div class="flex gap-1">
+                <button onclick="setMetode('Tunai')" class="bg-slate-800 p-2 rounded text-[10px]">💵</button>
+                <button onclick="setMetode('Non-Tunai')" class="bg-slate-800 p-2 rounded text-[10px]">💳</button>
+            </div>
+        </div>
+        <button onclick="checkout()" class="w-full btn-gold p-4 rounded-2xl font-bold shadow-lg">PROSES & KIRIM WA</button>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+        let allItems = [];
+        let cart = [];
+        let currentCat = 'ALL';
+        let selectedMetode = 'Tunai';
+
+        async function fetchItems() {
+            const resp = await fetch(API_URL + "?page=items");
+            allItems = await resp.json();
+            renderItems();
+        }
+
+        function renderItems() {
+            const grid = document.getElementById('item-grid');
+            const search = document.getElementById('search').value.toLowerCase();
+            grid.innerHTML = '';
+            
+            const filtered = allItems.filter(i => {
+                const matchSearch = i.nama.toLowerCase().includes(search) || i.merk.toLowerCase().includes(search);
+                const matchCat = currentCat === 'ALL' || i.kategori === currentCat;
+                return matchSearch && matchCat;
+            });
+
+            filtered.forEach(item => {
+                grid.innerHTML += `
+                    <div onclick="addToCart('${item.nama}', ${item.harga})" class="bg-deep-blue p-4 rounded-xl border border-gray-800 active:border-amber-500">
+                        <div class="text-[10px] text-gray-500 uppercase">${item.merk}</div>
+                        <div class="font-bold text-sm truncate">${item.nama}</div>
+                        <div class="text-amber-500 font-bold mt-2 text-xs">Rp ${parseInt(item.harga).toLocaleString()}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function addToCart(nama, harga) {
+            cart.push({ nama, harga });
+            kalkulasi();
+        }
+
+        function kalkulasi() {
+            let sub = cart.reduce((s, i) => s + i.harga, 0);
+            let diskon = parseInt(document.getElementById('diskon').value) || 0;
+            document.getElementById('total-display').innerText = "Rp " + (sub - diskon).toLocaleString();
+        }
+
+        function setMetode(m) {
+            selectedMetode = m;
+            document.getElementById('metode-label').innerText = m.toUpperCase();
+        }
+
+        async function checkout() {
+            if(cart.length === 0) return alert("Pilih barang dulu!");
+            let diskon = document.getElementById('diskon').value || 0;
+            let total = cart.reduce((s, i) => s + i.harga, 0) - diskon;
+            
+            // Format WA
+            let msg = `*MALTA VAPE STORE*\nTanggal: ${new Date().toLocaleDateString()}\n---\n`;
+            cart.forEach(c => msg += `- ${c.nama} (Rp ${c.harga.toLocaleString()})\n`);
+            msg += `---\nTotal: *Rp ${total.toLocaleString()}*\nMetode: ${selectedMetode}`;
+
+            // Simpan ke Sheet Penjualan
+            const dataRow = [Date.now(), new Date().toISOString(), cart.map(c => c.nama).join(", "), 0, diskon, total, selectedMetode];
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'penjualan', data: dataRow }) });
+
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+            location.reload();
+        }
+
+        function filterCat(c) { currentCat = c; renderItems(); }
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleString(); }, 1000);
+        window.onload = fetchItems;
+    </script>
+</body>
+</html>

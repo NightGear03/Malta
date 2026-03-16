@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Item - Malta Vape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: sans-serif; }
+        .gold-text { color: #fbbf24; }
+        .bg-deep-blue { background-color: #0f172a; }
+        .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
+        input, select { background: #1e293b; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; outline: none; }
+        input:focus { border-color: #fbbf24; }
+    </style>
+</head>
+<body class="p-5 pb-24">
+
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-xl font-bold gold-text uppercase">📦 Stock Management</h1>
+        <a href="index.html" class="text-xs bg-slate-800 px-3 py-1 rounded-full text-gray-400">Kembali</a>
+    </div>
+
+    <div class="bg-deep-blue p-6 rounded-3xl border border-gray-800 mb-8 shadow-xl">
+        <h2 class="text-sm font-bold mb-4 flex items-center">
+            <span class="mr-2">➕</span> Tambah Item Baru
+        </h2>
+        <div class="grid grid-cols-1 gap-3">
+            <input type="text" id="nama" placeholder="Nama Item (Contoh: Oxva Xlim Pro)">
+            <div class="grid grid-cols-2 gap-2">
+                <select id="kategori">
+                    <option value="POD">POD</option>
+                    <option value="MOD">MOD</option>
+                    <option value="LIQUID">LIQUID</option>
+                    <option value="CARTRIDGE">CARTRIDGE</option>
+                    <option value="OTHER">OTHER</option>
+                </select>
+                <input type="text" id="merk" placeholder="Merk (Contoh: Oxva)">
+            </div>
+            <input type="text" id="sub_kategori" placeholder="Sub-Kategori (Contoh: Saltnic)">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="number" id="stok" placeholder="Jumlah Stok">
+                <input type="number" id="harga" placeholder="Harga Jual">
+            </div>
+            <button onclick="simpanItem()" id="btn-simpan" class="btn-gold p-3 rounded-xl font-bold mt-2 shadow-lg">SIMPAN KE DATABASE</button>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead class="text-gray-500 uppercase border-b border-gray-800">
+                <tr>
+                    <th class="py-2">Item</th>
+                    <th class="py-2">Stok</th>
+                    <th class="py-2">Harga</th>
+                </tr>
+            </thead>
+            <tbody id="item-list">
+                <tr><td colspan="3" class="text-center py-10 text-gray-600">Memuat data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+
+        // 1. FUNGSI AMBIL DATA (GET)
+        async function loadItems() {
+            try {
+                const response = await fetch(API_URL + "?page=items");
+                const data = await response.json();
+                const container = document.getElementById('item-list');
+                container.innerHTML = '';
+
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <tr class="border-b border-gray-900">
+                            <td class="py-3">
+                                <div class="font-bold">${item.nama}</div>
+                                <div class="text-[10px] text-gray-500">${item.merk} - ${item.kategori}</div>
+                            </td>
+                            <td class="py-3 font-mono text-amber-500">${item.stok}</td>
+                            <td class="py-3 font-bold text-white">Rp ${parseInt(item.harga).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Gagal ambil data:", err);
+            }
+        }
+
+        // 2. FUNGSI SIMPAN DATA (POST)
+        async function simpanItem() {
+            const btn = document.getElementById('btn-simpan');
+            const itemData = [
+                Date.now(), // ID unik
+                document.getElementById('nama').value,
+                document.getElementById('kategori').value,
+                document.getElementById('sub_kategori').value,
+                document.getElementById('merk').value,
+                document.getElementById('stok').value,
+                document.getElementById('harga').value
+            ];
+
+            if(!itemData[1] || !itemData[5]) return alert("Nama dan Stok wajib diisi!");
+
+            btn.innerText = "⏳ Memproses...";
+            btn.disabled = true;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        target: 'items',
+                        data: itemData
+                    })
+                });
+                alert("Barang Berhasil Ditambah!");
+                location.reload(); // Refresh halaman untuk lihat hasil
+            } catch (err) {
+                alert("Gagal simpan!");
+                btn.innerText = "SIMPAN KE DATABASE";
+                btn.disabled = false;
+            }
+        }
+
+        // Jalankan saat halaman dibuka
+        window.onload = loadItems;
+    </script>
+</body>
+</html>
