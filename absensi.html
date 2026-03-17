@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presensi Malta Vape</title>
+    <title>Absensi Malta Vape</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
         .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .btn-checkin { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .btn-checkout { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
-        #camera-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); }
+        .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
+        #camera-modal, #history-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-6 pb-20">
 
     <div class="flex items-center justify-between mb-8">
         <a href="index.html" class="w-10 h-10 glass rounded-full flex items-center justify-center text-amber-500">←</a>
@@ -22,48 +22,77 @@
             <h1 class="text-sm font-black text-amber-500 uppercase tracking-widest">Presensi Kerja</h1>
             <p class="text-[10px] text-gray-500">MALTA VAPE STORE</p>
         </div>
-        <div class="w-10"></div>
+        <a href="https://wa.me/" class="w-10 h-10 glass rounded-full flex items-center justify-center text-emerald-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
     </div>
 
-    <div class="glass p-10 rounded-[2.5rem] text-center mb-8 border-amber-500/20 border-2">
+    <div class="glass p-8 rounded-[2.5rem] text-center mb-8 border-amber-500/20 border-2">
         <h2 id="live-clock" class="text-5xl font-black mb-2 tracking-tighter">00:00:00</h2>
-        <p id="live-date" class="text-xs text-gray-500 uppercase font-bold tracking-[0.2em]"></p>
+        <p id="live-date" class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.3em]"></p>
     </div>
 
-    <div class="space-y-4 mb-10">
-        <button onclick="openCamera('MASUK')" class="btn-checkin w-full py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3">
-            <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span> Mulai Kerja (Check-In)
+    <div class="space-y-3 mb-8">
+        <button onclick="handleAbsen('MASUK')" class="w-full py-5 bg-emerald-600 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 active:scale-95 transition-all">
+            <span class="w-2 h-2 bg-white rounded-full"></span> Mulai Kerja (Check-In)
         </button>
-        <button onclick="openCamera('PULANG')" class="btn-checkout w-full py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-lg shadow-rose-500/20 flex items-center justify-center gap-3">
-            <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span> Selesai Kerja (Check-Out)
+        <button onclick="handleAbsen('PULANG')" class="w-full py-5 bg-rose-600 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20 active:scale-95 transition-all">
+            <span class="w-2 h-2 bg-white rounded-full"></span> Selesai Kerja (Check-Out)
         </button>
+        <button onclick="handleAbsen('LIBUR')" class="w-full py-5 bg-sky-600 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-sky-900/20 active:scale-95 transition-all">
+            💤 Set Status Libur
+        </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="glass p-5 rounded-3xl">
+            <p class="text-[8px] text-gray-500 font-bold uppercase mb-1">Total Masuk</p>
+            <h3 id="stat-masuk" class="text-xl font-black">0 Hari</h3>
+        </div>
+        <div class="glass p-5 rounded-3xl">
+            <p class="text-[8px] text-gray-500 font-bold uppercase mb-1">Total Libur</p>
+            <h3 id="stat-libur" class="text-xl font-black">0 Hari</h3>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Riwayat Terakhir</h3>
+        <button onclick="openHistoryModal()" class="text-[10px] font-bold text-amber-500 uppercase">Lihat Lengkap ↓</button>
+    </div>
+    <div id="history-list" class="space-y-3 mb-10">
+        <div class="text-center py-10 opacity-20 text-xs italic">Menyinkronkan data...</div>
     </div>
 
     <div id="camera-modal" class="flex flex-col items-center justify-center p-6">
-        <div class="w-full max-w-sm glass rounded-[2.5rem] overflow-hidden relative">
+        <div class="w-full max-w-sm glass rounded-[2.5rem] overflow-hidden">
             <video id="video" class="w-full bg-black h-80 object-cover" autoplay playsinline></video>
             <canvas id="canvas" class="hidden"></canvas>
-            <div class="p-6 text-center">
-                <p class="text-[10px] text-amber-500 font-bold uppercase mb-4">Ambil Foto Area Kerja</p>
+            <div class="p-8 text-center">
+                <p class="text-[10px] text-amber-500 font-bold uppercase mb-6 tracking-widest">Bukti Foto Area Kerja</p>
                 <div class="flex gap-4">
                     <button onclick="closeCamera()" class="flex-1 py-4 bg-slate-800 rounded-2xl text-xs font-bold">Batal</button>
-                    <button onclick="takeSnap()" class="flex-1 py-4 btn-gold rounded-2xl text-xs font-black text-slate-900 bg-amber-500">JEPRET</button>
+                    <button onclick="takeSnap()" class="flex-1 py-4 btn-gold rounded-2xl text-xs font-black">JEPRET</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Riwayat Terakhir</h3>
-    <div id="absensi-list" class="space-y-3">
-        <div class="text-center py-10 opacity-20 italic text-xs">Memuat data...</div>
+    <div id="history-modal" class="flex flex-col p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black gold-text uppercase">Rekap Absensi</h2>
+            <button onclick="closeHistoryModal()" class="w-10 h-10 glass rounded-full flex items-center justify-center font-bold">✕</button>
+        </div>
+        <div id="full-history-content" class="space-y-3 overflow-y-auto no-scrollbar pb-20">
+            </div>
     </div>
 
     <script>
-        const API_URL = "URL_APPS_SCRIPT_KAMU";
-        let currentAction = "";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+        let currentStatus = "";
         let stream = null;
+        let allData = [];
 
-        // 1. Live Clock
+        // 1. Clock
         function updateClock() {
             const now = new Date();
             document.getElementById('live-clock').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
@@ -71,12 +100,31 @@
         }
         setInterval(updateClock, 1000);
 
-        // 2. Camera Logic
-        async function openCamera(action) {
-            currentAction = action;
+        // 2. Handler Absen
+        function handleAbsen(status) {
+            currentStatus = status;
+            if (status === 'LIBUR') {
+                if (confirm("Set status LIBUR untuk hari ini?")) {
+                    submitAbsen(""); // Libur gak butuh foto
+                }
+            } else {
+                openCamera();
+            }
+        }
+
+        // 3. Camera Logic (Kamera Belakang)
+        async function openCamera() {
             document.getElementById('camera-modal').style.display = 'flex';
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-            document.getElementById('video').srcObject = stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }, 
+                    audio: false 
+                });
+                document.getElementById('video').srcObject = stream;
+            } catch (e) {
+                alert("Gagal akses kamera belakang. Pastikan HTTPS aktif.");
+                closeCamera();
+            }
         }
 
         function closeCamera() {
@@ -84,66 +132,97 @@
             document.getElementById('camera-modal').style.display = 'none';
         }
 
-        async function takeSnap() {
+        function takeSnap() {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
-            const context = canvas.getContext('2d');
-            
-            // Resize ke ukuran kecil biar gak lemot (300x400)
-            canvas.width = 300;
-            canvas.height = 400;
-            context.drawImage(video, 0, 0, 300, 400);
-            
-            const photoBase64 = canvas.toDataURL('image/jpeg', 0.6); // Compress 60%
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300; canvas.height = 400;
+            ctx.drawImage(video, 0, 0, 300, 400);
+            const fotoBase64 = canvas.toDataURL('image/jpeg', 0.5);
             closeCamera();
-            submitAbsen(photoBase64);
+            submitAbsen(fotoBase64);
         }
 
-        // 3. Submit Data
+        // 4. Submit Data
         async function submitAbsen(foto) {
             const now = new Date();
-            const jamAktual = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const tgl = now.toISOString().split('T')[0];
+            const jam = now.getHours().toString().padStart(2, '0') + "." + now.getMinutes().toString().padStart(2, '0');
+            const tgl = now.toLocaleDateString('id-ID', { day:'2-digit', month:'2-digit', year:'numeric' });
             
             const payload = {
                 target: "absensi",
+                action: "APPEND",
                 data: [
-                    Date.now(),           // ID
-                    tgl,                  // Tanggal
-                    jamAktual,            // JAM (Ini yang kita fix)
-                    currentAction,        // Status (MASUK/PULANG)
-                    "Admin",              // Nama
-                    foto                  // Bukti Foto Base64
+                    Date.now(),
+                    tgl,
+                    currentStatus === 'MASUK' ? jam : "-",
+                    currentStatus === 'PULANG' ? jam : "-",
+                    currentStatus,
+                    foto
                 ]
             };
 
-            alert("⏳ Sedang mencatat absen...");
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("✅ Absen Berhasil!");
-            loadHistory();
+            alert("⏳ Mencatat kehadiran...");
+            try {
+                const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                alert("✅ Berhasil dicatat!");
+                loadHistory();
+            } catch (e) { alert("❌ Gagal simpan ke database"); }
         }
 
+        // 5. Load Data
         async function loadHistory() {
-            const resp = await fetch(API_URL + "?page=absensi");
-            const data = await resp.json();
-            const list = document.getElementById('absensi-list');
-            list.innerHTML = '';
+            try {
+                const resp = await fetch(API_URL + "?page=absensi");
+                allData = await resp.json();
+                
+                // Update Stats
+                const masukCount = [...new Set(allData.filter(d => d.status === 'MASUK').map(d => d.tanggal))].length;
+                const liburCount = allData.filter(d => d.status === 'LIBUR').length;
+                document.getElementById('stat-masuk').innerText = masukCount + " Hari";
+                document.getElementById('stat-libur').innerText = liburCount + " Hari";
+
+                // Render List (3 terbaru)
+                renderList(allData.slice(-3).reverse(), 'history-list');
+            } catch (e) { console.error(e); }
+        }
+
+        function renderList(data, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
             
-            data.slice(-5).reverse().forEach(a => {
-                const color = a.status === 'MASUK' ? 'emerald' : 'rose';
-                list.innerHTML += `
-                    <div class="glass p-5 rounded-3xl border-l-4 border-${color}-500 flex justify-between items-center">
-                        <div>
-                            <p class="text-[8px] text-gray-500 font-bold uppercase">${a.tanggal}</p>
-                            <h4 class="text-xs font-black">${a.status}</h4>
+            data.forEach(item => {
+                let colorClass = "bg-rose-500"; // Red default
+                if (item.status === 'MASUK' || item.status === 'PULANG') colorClass = "bg-emerald-500";
+                if (item.status === 'LIBUR') colorClass = "bg-sky-500";
+
+                const jamTampil = item.status === 'MASUK' ? item.jam_masuk : (item.status === 'PULANG' ? item.jam_keluar : '-');
+
+                container.innerHTML += `
+                    <div class="glass p-5 rounded-[2rem] flex justify-between items-center border-l-4 ${item.status === 'MASUK' ? 'border-emerald-500' : (item.status === 'PULANG' ? 'border-rose-500' : 'border-sky-500')}">
+                        <div class="flex items-center gap-4">
+                            <div class="w-2 h-10 ${colorClass} rounded-full"></div>
+                            <div>
+                                <p class="text-[8px] text-gray-500 font-bold uppercase">${item.tanggal}</p>
+                                <h4 class="text-xs font-black uppercase tracking-widest">${item.status}</h4>
+                            </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-black text-${color}-400">${a.jam}</p>
-                            ${a.foto ? `<span class="text-[8px] text-amber-500 font-bold">📸 BUKTI ADA</span>` : ''}
+                            <p class="text-sm font-black text-white">${jamTampil}</p>
+                            ${item.foto ? '<span class="text-[7px] text-amber-500 font-bold">📸 PROOF</span>' : ''}
                         </div>
                     </div>
                 `;
             });
+        }
+
+        function openHistoryModal() {
+            document.getElementById('history-modal').style.display = 'flex';
+            renderList(allData.slice().reverse(), 'full-history-content');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').style.display = 'none';
         }
 
         window.onload = () => { updateClock(); loadHistory(); };
