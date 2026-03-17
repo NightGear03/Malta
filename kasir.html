@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    
     <link rel="icon" type="image/png" href="https://i.imgur.com/h3D0nVP.png">
-<link rel="apple-touch-icon" href="https://i.imgur.com/h3D0nVP.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/h3D0nVP.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fbbf24">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Kasir - Malta Vape</title>
@@ -140,7 +137,9 @@
 
         function renderItems(cat, sub) {
             viewState.level = 'item'; updatePath(`${cat} > ${sub || 'All'}`);
-            const filtered = allItems.filter(i => i.kategori === cat && (!sub || i.sub_kategori === sub));
+            // FILTER: Hanya tampilkan item yang stoknya > 0
+            const filtered = allItems.filter(i => i.kategori === cat && (!sub || i.sub_kategori === sub) && parseInt(i.stok) > 0);
+            
             document.getElementById('grid-container').innerHTML = filtered.map(i => `
                 <div onclick="addToCart('${i.nama}', ${i.harga}, '${i.stok}')" class="bg-slate-900 p-4 rounded-3xl border border-slate-800 card-active relative overflow-hidden">
                     <div class="absolute top-2 right-2 bg-amber-500/10 text-amber-500 text-[8px] px-2 py-0.5 rounded-full font-bold">STOK: ${i.stok}</div>
@@ -153,10 +152,13 @@
         function handleSearch() {
             const query = document.getElementById('globalSearch').value.toLowerCase();
             if(!query) { renderCategories(); return; }
-            const filtered = allItems.filter(i => i.nama.toLowerCase().includes(query) || i.merk.toLowerCase().includes(query));
+            // FILTER: Hanya tampilkan hasil pencarian yang stoknya > 0
+            const filtered = allItems.filter(i => (i.nama.toLowerCase().includes(query) || i.merk.toLowerCase().includes(query)) && parseInt(i.stok) > 0);
+            
             document.getElementById('grid-container').innerHTML = filtered.map(i => `
                 <div onclick="addToCart('${i.nama}', ${i.harga}, '${i.stok}')" class="bg-slate-900 p-4 rounded-3xl border border-slate-800 card-active relative">
-                    <div class="text-[9px] text-gray-500 font-bold uppercase">${i.merk}</div>
+                    <div class="absolute top-2 right-2 bg-amber-500/10 text-amber-500 text-[8px] px-2 py-0.5 rounded-full font-bold">STOK: ${i.stok}</div>
+                    <div class="text-[9px] text-gray-500 font-bold uppercase mt-2">${i.merk}</div>
                     <div class="text-xs font-bold truncate mb-2">${i.nama}</div>
                     <div class="text-xs font-black gold-text">Rp ${parseInt(i.harga).toLocaleString()}</div>
                 </div>`).join('');
@@ -172,7 +174,7 @@
 
         function updateCartUI() {
             const list = document.getElementById('cart-list');
-            if(cart.length === 0) { list.innerHTML = `<p class="text-center text-gray-600 text-xs py-4 italic">Kosong...</p>`; document.getElementById('grand-total').innerText = "Rp 0"; return; }
+            if(cart.length === 0) { list.innerHTML = `<p class="text-center text-gray-600 text-xs py-4 italic">Belum ada item terpilih...</p>`; document.getElementById('grand-total').innerText = "Rp 0"; return; }
             let total = 0;
             list.innerHTML = cart.map((item, index) => {
                 const nett = (item.harga * item.qty) - item.diskon; total += nett;
@@ -190,16 +192,52 @@
         function updateQty(i, d) { cart[i].qty += d; if(cart[i].qty <= 0) cart.splice(i,1); updateCartUI(); }
         function applyItemDisc(i, v) { cart[i].diskon = parseInt(v) || 0; updateCartUI(); }
 
+        // --- LOGIC CHECKOUT BARU ---
         async function processCheckout() {
             if(cart.length === 0) return showToast("⚠️ Keranjang kosong!");
+            
             const total = cart.reduce((s, i) => s + (i.harga * i.qty - i.diskon), 0);
             const diskon = cart.reduce((s, i) => s + i.diskon, 0);
-            const items = cart.map(i => `${i.nama} (x${i.qty})`).join(", ");
+            const itemsFormatted = cart.map(i => `${i.nama} (${i.qty})`).join(", ");
             const method = document.getElementById('pay-method').value;
-            showToast("⏳ Menyimpan...");
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'penjualan', data: [Date.now(), new Date().toISOString(), items, total + diskon, diskon, total, method] }) });
-            let msg = `*MALTA VAPE - NOTA*\n---\n${cart.map(i => `• ${i.nama} x${i.qty}`).join('\n')}\n---\n*TOTAL: Rp ${total.toLocaleString()}*\nMetode: ${method}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`); clearCart(); showToast("✅ Berhasil!");
+
+            // List item untuk dipotong stoknya di GAS
+            const soldItems = cart.map(i => ({ nama: i.nama, qty: i.qty }));
+
+            showToast("⏳ Menyimpan Transaksi...");
+
+            const payload = {
+                target: 'penjualan',
+                action: 'SALE', // Memicu fungsi potong stok di GAS
+                data: [
+                    Date.now(), 
+                    new Date().toLocaleString('id-ID'), 
+                    itemsFormatted, 
+                    total + diskon, 
+                    diskon, 
+                    total, 
+                    method
+                ],
+                soldItems: soldItems
+            };
+
+            try {
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload) 
+                });
+                const result = await response.json();
+
+                if (result.status === "ok") {
+                    showToast("✅ Berhasil Disimpan & Stok Berkurang!");
+                    clearCart();
+                    init(); // Refresh data items untuk update label stok di UI
+                } else {
+                    showToast("❌ Gagal: " + result.error);
+                }
+            } catch (e) {
+                showToast("❌ Error Koneksi!");
+            }
         }
 
         // --- EXPENSE & CLOSING ---
@@ -220,16 +258,20 @@
             showToast("⏳ Menghitung...");
             const [respP, respE] = await Promise.all([fetch(API_URL + "?page=penjualan"), fetch(API_URL + "?page=pengeluaran")]);
             const sales = await respP.json(), expenses = await respE.json();
-            const today = new Date().toISOString().split('T')[0];
-            const dailySales = sales.filter(s => s.tanggal.startsWith(today)).reduce((s,i) => s + i.total_akhir, 0);
-            const dailyExp = expenses.filter(e => e.tanggal.startsWith(today)).reduce((s,i) => s + i.jumlah, 0);
+            const today = new Date().toLocaleDateString('id-ID').split('/').join('/'); 
             
-            document.getElementById('modal-date').innerText = today;
+            const filteredSales = sales.filter(s => s.tanggal.includes(new Date().toLocaleDateString('id-ID')));
+            const dailySales = filteredSales.reduce((s,i) => s + parseInt(i.total_akhir || 0), 0);
+            
+            const filteredEx = expenses.filter(e => e.tanggal.includes(new Date().toLocaleDateString('id-ID')));
+            const dailyExp = filteredEx.reduce((s,i) => s + parseInt(i.jumlah || 0), 0);
+            
+            document.getElementById('modal-date').innerText = new Date().toLocaleDateString('id-ID');
             document.getElementById('modal-sales').innerText = "Rp " + dailySales.toLocaleString();
             document.getElementById('modal-expense').innerText = "- Rp " + dailyExp.toLocaleString();
             document.getElementById('modal-total').innerText = "Rp " + (dailySales - dailyExp).toLocaleString();
 
-            const report = `*CLOSING MALTA VAPE*\nTanggal: ${today}\n---\nPenjualan: Rp ${dailySales.toLocaleString()}\nPengeluaran: Rp ${dailyExp.toLocaleString()}\n---\n*SALDO BERSIH: Rp ${(dailySales-dailyExp).toLocaleString()}*`;
+            const report = `*CLOSING MALTA VAPE*\nTanggal: ${new Date().toLocaleDateString('id-ID')}\n---\nPenjualan: Rp ${dailySales.toLocaleString()}\nPengeluaran: Rp ${dailyExp.toLocaleString()}\n---\n*SALDO BERSIH: Rp ${(dailySales-dailyExp).toLocaleString()}*`;
             document.getElementById('btn-wa-closing').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(report)}`);
             
             document.getElementById('closing-modal').classList.remove('hidden');
