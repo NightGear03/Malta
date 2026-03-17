@@ -1,69 +1,85 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    
     <link rel="icon" type="image/png" href="https://i.imgur.com/h3D0nVP.png">
-<link rel="apple-touch-icon" href="https://i.imgur.com/h3D0nVP.png">
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fbbf24">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    
+    <link rel="apple-touch-icon" href="https://i.imgur.com/h3D0nVP.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malta Vape - Dashboard</title>
+    <title>Malta Vape - Dashboard Audit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; margin: 0; }
         .gold-text { color: #fbbf24; }
-        .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
         .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(251, 191, 36, 0.1); }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #1e293b; display: flex; justify-content: space-around; padding: 12px 0 24px 0; z-index: 50; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #64748b; text-decoration: none; }
         .nav-item.active { color: #fbbf24; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
 <body class="pb-32">
 
     <main class="p-6">
-        <div class="flex justify-between items-center mb-8 mt-2">
+        <div class="flex justify-between items-center mb-6 mt-2">
             <div>
-                <h2 class="text-2xl font-extrabold tracking-tight">Halo, <span class="gold-text">Admin!</span></h2>
-                <p id="tgl-skrg" class="text-gray-500 text-[10px] uppercase tracking-widest font-bold"></p>
+                <h2 class="text-2xl font-extrabold tracking-tight italic">MALTA <span class="gold-text">VAPE</span></h2>
+                <input type="date" id="date-filter" onchange="loadHomeData()" class="bg-transparent text-amber-500 font-bold text-[10px] uppercase tracking-widest outline-none border-none">
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg shadow-amber-500/5">👑</div>
+            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg">👑</div>
         </div>
 
-        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-900/20 p-8 rounded-[2.5rem] border border-amber-500/20 mb-8 relative overflow-hidden shadow-2xl">
+        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-900/20 p-8 rounded-[2.5rem] border border-amber-500/20 mb-6 relative overflow-hidden shadow-2xl">
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
-            <p class="text-gray-400 text-[9px] uppercase font-black tracking-[0.2em] mb-2">Penjualan Hari Ini</p>
-            <h3 class="text-4xl font-black gold-text mb-4 tracking-tighter" id="omzet-hari-ini">Rp 0</h3>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full font-bold">✨ Realtime Update</span>
+            
+            <div class="mb-6">
+                <p class="text-gray-400 text-[9px] uppercase font-black tracking-widest mb-1">Total Omzet</p>
+                <h3 class="text-4xl font-black gold-text tracking-tighter" id="omzet-tampil">Rp 0</h3>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div>
+                    <p class="text-gray-500 text-[8px] uppercase font-bold mb-1">Uang Keluar</p>
+                    <p id="total-keluar" class="text-rose-400 font-black text-sm">- Rp 0</p>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-[8px] uppercase font-bold mb-1">Diterima (Net)</p>
+                    <p id="total-net" class="text-emerald-400 font-black text-sm">Rp 0</p>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-10">
-            <a href="grafik.html" class="glass p-6 rounded-[2rem] flex flex-col items-center text-center">
-                <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-2xl mb-3">📈</div>
-                <p class="font-bold text-xs uppercase tracking-tight">Analisa</p>
+        <div class="glass p-6 rounded-[2.5rem] mb-6">
+            <h4 class="font-black text-[9px] uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2">
+                🔥 Barang Terlaris (Top 3)
+            </h4>
+            <div id="leaderboard" class="space-y-3">
+                <div class="text-center py-2 text-[10px] opacity-30 italic">Menghitung data...</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <a href="grafik.html" class="glass p-5 rounded-[2rem] flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-lg">📈</div>
+                <p class="font-bold text-[10px] uppercase">Analisa</p>
             </a>
-            <a href="inventory.html" class="glass p-6 rounded-[2rem] flex flex-col items-center text-center">
+            <a href="inventory.html" class="glass p-5 rounded-[2rem] flex items-center gap-4 relative">
                 <div id="low-stock-count" class="absolute -top-1 -right-1 bg-rose-600 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-slate-900 hidden">0</div>
-                <div class="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-2xl mb-3">📦</div>
-                <p class="font-bold text-xs uppercase tracking-tight">Stok Item</p>
+                <div class="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center text-lg">📦</div>
+                <p class="font-bold text-[10px] uppercase">Stok</p>
             </a>
         </div>
 
         <div class="glass p-6 rounded-[2.5rem]">
-            <h4 class="font-black text-[10px] uppercase text-gray-500 tracking-widest mb-6 flex justify-between">
+            <h4 class="font-black text-[9px] uppercase text-gray-500 tracking-widest mb-6 flex justify-between">
                 Aktivitas Terakhir <span class="text-amber-500">Live</span>
             </h4>
-            <div class="space-y-6" id="recent-activity">
-                <div class="text-center py-4 text-xs text-gray-600 italic">Menyinkronkan aktivitas...</div>
+            <div class="space-y-5" id="recent-activity">
+                <div class="text-center py-4 text-xs text-gray-600 italic">Memuat aktivitas...</div>
             </div>
         </div>
     </main>
@@ -91,60 +107,99 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
 
         async function loadHomeData() {
+            const filterDate = document.getElementById('date-filter').value;
+            const [d, m, y] = filterDate.split('-');
+            const formattedDate = `${y}/${m}/${d}`; // Sesuaikan format Sheets lo
+
             try {
-                const [pResp, iResp] = await Promise.all([
+                const [pResp, iResp, exResp] = await Promise.all([
                     fetch(API_URL + "?page=penjualan"),
-                    fetch(API_URL + "?page=items")
+                    fetch(API_URL + "?page=items"),
+                    fetch(API_URL + "?page=pengeluaran")
                 ]);
+
                 const sales = await pResp.json();
                 const items = await iResp.json();
-                
-                // 1. Omzet Hari Ini
-                const today = new Date().toISOString().split('T')[0];
-                const omzet = sales.filter(s => s.tanggal.startsWith(today)).reduce((s,i) => s + i.total_akhir, 0);
-                document.getElementById('omzet-hari-ini').innerText = "Rp " + omzet.toLocaleString();
+                const expenses = await exResp.json();
 
-                // 2. Low Stock Alert
+                // 1. Logic Omzet & Pengeluaran Berdasarkan Filter
+                const targetTgl = filterDate.split('-').reverse().join('/'); // Jadi "17/03/2026"
+                
+                const filteredSales = sales.filter(s => s.tanggal.includes(targetTgl));
+                const totalOmzet = filteredSales.reduce((sum, s) => sum + (s.total_akhir || 0), 0);
+                
+                const filteredEx = expenses.filter(e => e.tanggal.includes(targetTgl));
+                const totalKeluar = filteredEx.reduce((sum, e) => sum + (e.jumlah || 0), 0);
+
+                document.getElementById('omzet-tampil').innerText = "Rp " + totalOmzet.toLocaleString();
+                document.getElementById('total-keluar').innerText = "- Rp " + totalKeluar.toLocaleString();
+                document.getElementById('total-net').innerText = "Rp " + (totalOmzet - totalKeluar).toLocaleString();
+
+                // 2. Low Stock
                 const low = items.filter(i => parseInt(i.stok) < 5);
+                const badge = document.getElementById('low-stock-count');
                 if(low.length > 0) {
-                    const badge = document.getElementById('low-stock-count');
                     badge.innerText = low.length;
                     badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
                 }
 
-                // 3. Aktivitas Terakhir (Ambil 3 terakhir)
-                const container = document.getElementById('recent-activity');
-                container.innerHTML = '';
-                sales.slice(-3).reverse().forEach(s => {
-                    container.innerHTML += `
-                        <div class="flex items-center justify-between border-b border-white/5 pb-4">
-                            <div class="w-2/3">
-                                <p class="text-xs font-bold truncate">${s.items}</p>
-                                <p class="text-[9px] text-gray-500 uppercase">${new Date(s.tanggal).toLocaleTimeString()}</p>
-                            </div>
-                            <p class="text-xs font-black text-emerald-500">+Rp ${(s.total_akhir/1000)}k</p>
+                // 3. Leaderboard Top 3 (Logika ngitung item dari string penjualan)
+                const itemMap = {};
+                filteredSales.forEach(s => {
+                    const daftar = s.items.split(', ');
+                    daftar.forEach(entry => {
+                        const match = entry.match(/(.+) \((\d+)\)/);
+                        if (match) {
+                            const name = match[1];
+                            const qty = parseInt(match[2]);
+                            itemMap[name] = (itemMap[name] || 0) + qty;
+                        }
+                    });
+                });
+
+                const sortedItems = Object.entries(itemMap).sort((a,b) => b[1] - a[1]).slice(0, 3);
+                const lbContainer = document.getElementById('leaderboard');
+                lbContainer.innerHTML = sortedItems.length ? '' : '<p class="text-[10px] opacity-20 text-center italic">Tidak ada data penjualan</p>';
+                
+                sortedItems.forEach(([name, qty], index) => {
+                    const icons = ['🥇', '🥈', '🥉'];
+                    lbContainer.innerHTML += `
+                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-2xl">
+                            <p class="text-[10px] font-bold text-gray-300">${icons[index]} ${name}</p>
+                            <span class="text-[10px] font-black gold-text">${qty} Pcs</span>
                         </div>
                     `;
                 });
-            } catch (e) { console.error(e); }
+
+                // 4. Aktivitas Terakhir
+                const actContainer = document.getElementById('recent-activity');
+                actContainer.innerHTML = '';
+                filteredSales.slice(-3).reverse().forEach(s => {
+                    actContainer.innerHTML += `
+                        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                            <div class="w-2/3">
+                                <p class="text-[10px] font-bold truncate">${s.items}</p>
+                                <p class="text-[8px] text-gray-500 font-bold uppercase">${s.metode_bayar} • ${s.id.toString().slice(-4)}</p>
+                            </div>
+                            <p class="text-[10px] font-black text-emerald-500">+Rp ${(s.total_akhir/1000).toFixed(0)}k</p>
+                        </div>
+                    `;
+                });
+
+            } catch (e) { console.error("Sync Error:", e); }
         }
 
         window.onload = () => {
+            // Set default date picker ke hari ini (WIB)
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(now - offset).toISOString().split('T')[0];
+            document.getElementById('date-filter').value = localISOTime;
+            
             loadHomeData();
-            document.getElementById('tgl-skrg').innerText = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric'});
         };
     </script>
-    
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker registered!'))
-        .catch(err => console.log('SW registration failed: ', err));
-    });
-  }
-</script>
-
-    
 </body>
 </html>
