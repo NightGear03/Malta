@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malta Vape - Dashboard Audit</title>
+    <title>Malta Vape - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -20,7 +20,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #64748b; text-decoration: none; }
         .nav-item.active { color: #fbbf24; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-        /* Fix modal agar tersembunyi default */
         #items-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
     </style>
 </head>
@@ -32,7 +31,7 @@
                 <h2 class="text-2xl font-extrabold tracking-tight italic">MALTA <span class="gold-text">VAPE</span></h2>
                 <input type="date" id="date-filter" onchange="loadHomeData()" class="bg-transparent text-amber-500 font-bold text-[10px] uppercase tracking-widest outline-none border-none">
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg shadow-amber-500/5">👑</div>
+            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg">👑</div>
         </div>
 
         <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-900/20 p-8 rounded-[2.5rem] border border-amber-500/20 mb-6 relative overflow-hidden shadow-2xl">
@@ -58,12 +57,12 @@
         <div class="grid grid-cols-2 gap-4 mb-8">
             <a href="grafik.html" class="glass p-6 rounded-[2rem] flex flex-col items-center">
                 <div class="text-2xl mb-2">📈</div>
-                <p class="font-bold text-[10px] uppercase tracking-tighter">Analisa</p>
+                <p class="font-bold text-[10px] uppercase">Analisa</p>
             </a>
             <a href="inventory.html" class="glass p-6 rounded-[2rem] flex flex-col items-center relative">
                 <div id="low-stock-count" class="absolute -top-1 -right-1 bg-rose-600 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-slate-900 hidden">0</div>
                 <div class="text-2xl mb-2">📦</div>
-                <p class="font-bold text-[10px] uppercase tracking-tighter">Stok</p>
+                <p class="font-bold text-[10px] uppercase">Stok</p>
             </a>
         </div>
 
@@ -79,7 +78,7 @@
 
     <div id="items-modal" class="flex flex-col p-6 overflow-hidden">
         <div class="flex justify-between items-center mb-8 mt-4">
-            <h2 class="text-xl font-black gold-text uppercase italic tracking-tighter">Laporan Barang</h2>
+            <h2 class="text-xl font-black gold-text uppercase italic">Laporan Barang</h2>
             <button onclick="closeItemsModal()" class="w-12 h-12 glass rounded-full flex items-center justify-center text-xl shadow-xl">✕</button>
         </div>
         <div id="items-report-list" class="space-y-4 overflow-y-auto pb-20 no-scrollbar"></div>
@@ -108,15 +107,19 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
         let masterItems = [], currentSales = [];
 
+        // Logika Ambil Data dengan Cache Buster
         async function loadHomeData() {
             const filterDate = document.getElementById('date-filter').value;
             const targetTgl = filterDate.split('-').reverse().map(num => parseInt(num)).join('/');
+            
+            // Tambahin Timestamp biar Google gak ngasih data lama (Cache Buster)
+            const timestamp = `&_ts=${Date.now()}`;
 
             try {
                 const [pResp, iResp, exResp] = await Promise.all([
-                    fetch(API_URL + "?page=penjualan"),
-                    fetch(API_URL + "?page=items"),
-                    fetch(API_URL + "?page=pengeluaran")
+                    fetch(API_URL + "?page=penjualan" + timestamp),
+                    fetch(API_URL + "?page=items" + timestamp),
+                    fetch(API_URL + "?page=pengeluaran" + timestamp)
                 ]);
 
                 currentSales = await pResp.json();
@@ -157,13 +160,12 @@
             document.getElementById('items-modal').style.display = 'flex';
             const filterDate = document.getElementById('date-filter').value;
             const targetTgl = filterDate.split('-').reverse().map(num => parseInt(num)).join('/');
-            
             const filteredSales = currentSales.filter(s => s.tanggal.includes(targetTgl));
             const listContainer = document.getElementById('items-report-list');
             listContainer.innerHTML = '';
 
             if(filteredSales.length === 0) {
-                listContainer.innerHTML = '<div class="text-center py-20 opacity-20 italic text-[10px]">No sales today</div>';
+                listContainer.innerHTML = '<div class="text-center py-20 opacity-20 italic text-[10px]">No sales recorded</div>';
                 return;
             }
 
@@ -196,12 +198,15 @@
 
         function closeItemsModal() { document.getElementById('items-modal').style.display = 'none'; }
 
-        window.onload = () => {
+        // RITUAL PENTING: Force Refresh pas halaman muncul lagi (Back Button)
+        window.addEventListener('pageshow', function(event) {
             const now = new Date();
             const offset = now.getTimezoneOffset() * 60000;
             document.getElementById('date-filter').value = new Date(now - offset).toISOString().split('T')[0];
-            loadHomeData();
-        };
+            loadHomeData(); // Panggil fungsi ambil data tiap kali halaman muncul
+        });
+
+        window.onload = loadHomeData;
     </script>
 </body>
 </html>
