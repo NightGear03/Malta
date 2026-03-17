@@ -20,6 +20,8 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #64748b; text-decoration: none; }
         .nav-item.active { color: #fbbf24; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        /* Fix modal agar tersembunyi default */
+        #items-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="pb-32">
@@ -30,59 +32,58 @@
                 <h2 class="text-2xl font-extrabold tracking-tight italic">MALTA <span class="gold-text">VAPE</span></h2>
                 <input type="date" id="date-filter" onchange="loadHomeData()" class="bg-transparent text-amber-500 font-bold text-[10px] uppercase tracking-widest outline-none border-none">
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg">👑</div>
+            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg shadow-amber-500/5">👑</div>
         </div>
 
         <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-900/20 p-8 rounded-[2.5rem] border border-amber-500/20 mb-6 relative overflow-hidden shadow-2xl">
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
-            
-            <div class="mb-6">
-                <p class="text-gray-400 text-[9px] uppercase font-black tracking-widest mb-1">Total Omzet</p>
-                <h3 class="text-4xl font-black gold-text tracking-tighter" id="omzet-tampil">Rp 0</h3>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                <div>
-                    <p class="text-gray-500 text-[8px] uppercase font-bold mb-1">Uang Keluar</p>
-                    <p id="total-keluar" class="text-rose-400 font-black text-sm">- Rp 0</p>
+            <p class="text-gray-400 text-[9px] uppercase font-black tracking-widest mb-1">Total Omzet</p>
+            <h3 class="text-4xl font-black gold-text tracking-tighter" id="omzet-tampil">Rp 0</h3>
+            <div class="flex gap-4 mt-6 pt-4 border-t border-white/5">
+                <div class="flex-1">
+                    <p class="text-gray-500 text-[8px] font-bold uppercase mb-1 tracking-widest">Pengeluaran</p>
+                    <p id="total-keluar" class="text-rose-400 font-black text-sm">Rp 0</p>
                 </div>
-                <div>
-                    <p class="text-gray-500 text-[8px] uppercase font-bold mb-1">Diterima (Net)</p>
+                <div class="flex-1">
+                    <p class="text-gray-500 text-[8px] font-bold uppercase mb-1 tracking-widest">Net Saldo</p>
                     <p id="total-net" class="text-emerald-400 font-black text-sm">Rp 0</p>
                 </div>
             </div>
         </div>
 
-        <div class="glass p-6 rounded-[2.5rem] mb-6">
-            <h4 class="font-black text-[9px] uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2">
-                🔥 Barang Terlaris (Top 3)
-            </h4>
-            <div id="leaderboard" class="space-y-3">
-                <div class="text-center py-2 text-[10px] opacity-30 italic">Menghitung data...</div>
-            </div>
-        </div>
+        <button onclick="openItemsModal()" class="w-full py-5 mb-8 bg-amber-500/10 border border-amber-500/20 rounded-[2rem] text-amber-500 font-black text-[10px] uppercase tracking-[0.2em] active:scale-95 transition-all">
+            📦 Barang Keluar Hari Ini
+        </button>
 
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <a href="grafik.html" class="glass p-5 rounded-[2rem] flex items-center gap-4">
-                <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-lg">📈</div>
-                <p class="font-bold text-[10px] uppercase">Analisa</p>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <a href="grafik.html" class="glass p-6 rounded-[2rem] flex flex-col items-center">
+                <div class="text-2xl mb-2">📈</div>
+                <p class="font-bold text-[10px] uppercase tracking-tighter">Analisa</p>
             </a>
-            <a href="inventory.html" class="glass p-5 rounded-[2rem] flex items-center gap-4 relative">
+            <a href="inventory.html" class="glass p-6 rounded-[2rem] flex flex-col items-center relative">
                 <div id="low-stock-count" class="absolute -top-1 -right-1 bg-rose-600 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-slate-900 hidden">0</div>
-                <div class="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center text-lg">📦</div>
-                <p class="font-bold text-[10px] uppercase">Stok</p>
+                <div class="text-2xl mb-2">📦</div>
+                <p class="font-bold text-[10px] uppercase tracking-tighter">Stok</p>
             </a>
         </div>
 
         <div class="glass p-6 rounded-[2.5rem]">
             <h4 class="font-black text-[9px] uppercase text-gray-500 tracking-widest mb-6 flex justify-between">
-                Aktivitas Terakhir <span class="text-amber-500">Live</span>
+                Aktivitas Terakhir <span class="text-amber-500 animate-pulse">● LIVE</span>
             </h4>
             <div class="space-y-5" id="recent-activity">
-                <div class="text-center py-4 text-xs text-gray-600 italic">Memuat aktivitas...</div>
+                <div class="text-center py-4 text-[10px] text-gray-600 italic">Syncing...</div>
             </div>
         </div>
     </main>
+
+    <div id="items-modal" class="flex flex-col p-6 overflow-hidden">
+        <div class="flex justify-between items-center mb-8 mt-4">
+            <h2 class="text-xl font-black gold-text uppercase italic tracking-tighter">Laporan Barang</h2>
+            <button onclick="closeItemsModal()" class="w-12 h-12 glass rounded-full flex items-center justify-center text-xl shadow-xl">✕</button>
+        </div>
+        <div id="items-report-list" class="space-y-4 overflow-y-auto pb-20 no-scrollbar"></div>
+    </div>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
@@ -99,17 +100,17 @@
         </a>
         <a href="absensi.html" class="nav-item">
             <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm.5 13H11v-6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-            <span class="font-bold">Absensi</span>
+            <span class="font-bold">Absen</span>
         </a>
     </nav>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
+        let masterItems = [], currentSales = [];
 
         async function loadHomeData() {
             const filterDate = document.getElementById('date-filter').value;
-            const [d, m, y] = filterDate.split('-');
-            const formattedDate = `${y}/${m}/${d}`; // Sesuaikan format Sheets lo
+            const targetTgl = filterDate.split('-').reverse().map(num => parseInt(num)).join('/');
 
             try {
                 const [pResp, iResp, exResp] = await Promise.all([
@@ -118,86 +119,87 @@
                     fetch(API_URL + "?page=pengeluaran")
                 ]);
 
-                const sales = await pResp.json();
-                const items = await iResp.json();
+                currentSales = await pResp.json();
+                masterItems = await iResp.json();
                 const expenses = await exResp.json();
 
-                // 1. Logic Omzet & Pengeluaran Berdasarkan Filter
-                const targetTgl = filterDate.split('-').reverse().join('/'); // Jadi "17/03/2026"
-                
-                const filteredSales = sales.filter(s => s.tanggal.includes(targetTgl));
-                const totalOmzet = filteredSales.reduce((sum, s) => sum + (s.total_akhir || 0), 0);
-                
+                const filteredSales = currentSales.filter(s => s.tanggal.includes(targetTgl));
+                const totalOmzet = filteredSales.reduce((sum, s) => sum + (parseInt(s.total_akhir) || 0), 0);
                 const filteredEx = expenses.filter(e => e.tanggal.includes(targetTgl));
-                const totalKeluar = filteredEx.reduce((sum, e) => sum + (e.jumlah || 0), 0);
+                const totalKeluar = filteredEx.reduce((sum, e) => sum + (parseInt(e.jumlah) || 0), 0);
 
                 document.getElementById('omzet-tampil').innerText = "Rp " + totalOmzet.toLocaleString();
-                document.getElementById('total-keluar').innerText = "- Rp " + totalKeluar.toLocaleString();
+                document.getElementById('total-keluar').innerText = "Rp " + totalKeluar.toLocaleString();
                 document.getElementById('total-net').innerText = "Rp " + (totalOmzet - totalKeluar).toLocaleString();
 
-                // 2. Low Stock
-                const low = items.filter(i => parseInt(i.stok) < 5);
+                const low = masterItems.filter(i => parseInt(i.stok) < 5);
                 const badge = document.getElementById('low-stock-count');
-                if(low.length > 0) {
-                    badge.innerText = low.length;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
+                if(low.length > 0) { badge.innerText = low.length; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
 
-                // 3. Leaderboard Top 3 (Logika ngitung item dari string penjualan)
-                const itemMap = {};
-                filteredSales.forEach(s => {
-                    const daftar = s.items.split(', ');
-                    daftar.forEach(entry => {
-                        const match = entry.match(/(.+) \((\d+)\)/);
-                        if (match) {
-                            const name = match[1];
-                            const qty = parseInt(match[2]);
-                            itemMap[name] = (itemMap[name] || 0) + qty;
-                        }
-                    });
-                });
-
-                const sortedItems = Object.entries(itemMap).sort((a,b) => b[1] - a[1]).slice(0, 3);
-                const lbContainer = document.getElementById('leaderboard');
-                lbContainer.innerHTML = sortedItems.length ? '' : '<p class="text-[10px] opacity-20 text-center italic">Tidak ada data penjualan</p>';
-                
-                sortedItems.forEach(([name, qty], index) => {
-                    const icons = ['🥇', '🥈', '🥉'];
-                    lbContainer.innerHTML += `
-                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-2xl">
-                            <p class="text-[10px] font-bold text-gray-300">${icons[index]} ${name}</p>
-                            <span class="text-[10px] font-black gold-text">${qty} Pcs</span>
-                        </div>
-                    `;
-                });
-
-                // 4. Aktivitas Terakhir
                 const actContainer = document.getElementById('recent-activity');
                 actContainer.innerHTML = '';
-                filteredSales.slice(-3).reverse().forEach(s => {
+                filteredSales.slice(-5).reverse().forEach(s => {
+                    const timePart = s.tanggal.includes(' ') ? s.tanggal.split(' ')[1] : "--:--";
                     actContainer.innerHTML += `
                         <div class="flex items-center justify-between border-b border-white/5 pb-4">
                             <div class="w-2/3">
                                 <p class="text-[10px] font-bold truncate">${s.items}</p>
-                                <p class="text-[8px] text-gray-500 font-bold uppercase">${s.metode_bayar} • ${s.id.toString().slice(-4)}</p>
+                                <p class="text-[8px] text-gray-500 uppercase font-black">${timePart} • ${s.metode_bayar}</p>
                             </div>
                             <p class="text-[10px] font-black text-emerald-500">+Rp ${(s.total_akhir/1000).toFixed(0)}k</p>
-                        </div>
-                    `;
+                        </div>`;
                 });
-
-            } catch (e) { console.error("Sync Error:", e); }
+            } catch (e) { console.error(e); }
         }
 
+        function openItemsModal() {
+            document.getElementById('items-modal').style.display = 'flex';
+            const filterDate = document.getElementById('date-filter').value;
+            const targetTgl = filterDate.split('-').reverse().map(num => parseInt(num)).join('/');
+            
+            const filteredSales = currentSales.filter(s => s.tanggal.includes(targetTgl));
+            const listContainer = document.getElementById('items-report-list');
+            listContainer.innerHTML = '';
+
+            if(filteredSales.length === 0) {
+                listContainer.innerHTML = '<div class="text-center py-20 opacity-20 italic text-[10px]">No sales today</div>';
+                return;
+            }
+
+            filteredSales.forEach(s => {
+                const itemArray = s.items.split(', ');
+                itemArray.forEach(entry => {
+                    const match = entry.match(/(.+) \((\d+)\)/);
+                    if(match) {
+                        const nama = match[1];
+                        const qty = match[2];
+                        const info = masterItems.find(i => i.nama === nama) || {};
+                        listContainer.innerHTML += `
+                            <div class="glass p-6 rounded-[2rem] border-l-4 border-amber-500">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="w-3/4">
+                                        <p class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">${info.merk || 'No Brand'} • ${info.kategori || 'N/A'}</p>
+                                        <h4 class="text-[11px] font-black leading-tight">${nama}</h4>
+                                    </div>
+                                    <div class="text-right"><p class="text-[10px] font-black gold-text">${qty} Pcs</p></div>
+                                </div>
+                                <div class="flex justify-between items-center pt-3 border-t border-white/5">
+                                    <p class="text-[9px] text-gray-400 font-bold">Price: Rp ${parseInt(info.harga || 0).toLocaleString()}</p>
+                                    <p class="text-[9px] text-rose-400 font-bold">Disc: Rp ${parseInt(s.total_diskon || 0).toLocaleString()}</p>
+                                </div>
+                            </div>`;
+                    }
+                });
+            });
+        }
+
+        function closeItemsModal() { document.getElementById('items-modal').style.display = 'none'; }
+
         window.onload = () => {
-            // Set default date picker ke hari ini (WIB)
             const now = new Date();
             const offset = now.getTimezoneOffset() * 60000;
-            const localISOTime = new Date(now - offset).toISOString().split('T')[0];
-            document.getElementById('date-filter').value = localISOTime;
-            
+            document.getElementById('date-filter').value = new Date(now - offset).toISOString().split('T')[0];
             loadHomeData();
         };
     </script>
