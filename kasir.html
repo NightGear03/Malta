@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="icon" type="image/png" href="https://i.imgur.com/h3D0nVP.png">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/h3D0nVP.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#fbbf24">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Kasir - Malta Vape</title>
@@ -18,8 +12,7 @@
         .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #020617; }
         .card-active:active { transform: scale(0.96); transition: 0.1s; }
         #toast-box { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 85%; }
-        @keyframes slide-in { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-slide-in { animation: slide-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -28,13 +21,13 @@
     <div class="sticky top-0 z-40 bg-[#020617]/90 backdrop-blur-md p-4">
         <div class="flex justify-between items-center mb-4">
             <a href="index.html" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800 text-amber-500">←</a>
-            <h1 class="font-extrabold text-lg gold-text tracking-tighter">MALTA <span class="text-white">POS</span></h1>
+            <h1 class="font-extrabold text-lg gold-text italic tracking-tighter">MALTA <span class="text-white">POS</span></h1>
             <div class="flex gap-2">
-                <button onclick="openExpenseModal()" class="text-[9px] bg-rose-500/10 text-rose-500 px-3 py-1 rounded-full border border-rose-500/20 font-bold uppercase tracking-widest">Biaya</button>
-                <button onclick="showClosing()" class="text-[9px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-bold uppercase tracking-widest">Closing</button>
+                <button onclick="openExpenseModal()" class="text-[9px] bg-rose-500/10 text-rose-500 px-3 py-1 rounded-full border border-rose-500/20 font-bold uppercase">Biaya</button>
+                <button onclick="showClosing()" class="text-[9px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-bold uppercase">Closing</button>
             </div>
         </div>
-        <input type="text" id="globalSearch" onkeyup="handleSearch()" placeholder="Cari item atau merk..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm outline-none focus:border-amber-500">
+        <input type="text" id="globalSearch" onkeyup="handleSearch()" placeholder="Cari merk atau item..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm outline-none focus:border-amber-500">
     </div>
 
     <div class="px-4 py-2 text-[10px] uppercase tracking-widest text-gray-500 font-bold" id="path-status">Menu Utama</div>
@@ -42,20 +35,32 @@
 
     <div class="fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-amber-500/20 rounded-t-[2.5rem] shadow-2xl z-50 p-6">
         <div class="flex justify-between items-center mb-4 px-2">
-            <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Keranjang</span>
-            <button onclick="clearCart()" class="text-[10px] text-rose-500 font-bold uppercase tracking-widest">Kosongkan</button>
+            <span class="text-[10px] text-gray-400 font-black uppercase">Keranjang</span>
+            <button onclick="clearCart()" class="text-[10px] text-rose-500 font-bold uppercase">Kosongkan</button>
         </div>
-        <div id="cart-list" class="max-h-48 overflow-y-auto mb-5 no-scrollbar space-y-3">
-            <p class="text-center text-gray-600 text-[10px] py-4 italic">Keranjang masih kosong...</p>
+        <div id="cart-list" class="max-h-40 overflow-y-auto mb-4 no-scrollbar space-y-3">
+            <p class="text-center text-gray-600 text-[10px] py-4 italic">Kosong...</p>
         </div>
-        <div class="border-t border-slate-800 pt-5">
-            <div class="flex justify-between items-center mb-5">
-                <span class="text-gray-400 text-[10px] font-bold">PEMBAYARAN:</span>
-                <select id="pay-method" class="bg-transparent text-[10px] font-black text-amber-500 outline-none">
-                    <option value="Tunai">💵 TUNAI</option>
-                    <option value="Non-Tunai">💳 QRIS / TRANSFER</option>
-                </select>
+        
+        <div class="border-t border-slate-800 pt-4">
+            <div class="flex flex-col gap-3 mb-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400 text-[10px] font-bold uppercase">Metode Bayar:</span>
+                    <select id="pay-method" onchange="toggleSplitInput()" class="bg-transparent text-[10px] font-black text-amber-500 outline-none">
+                        <option value="Tunai">💵 TUNAI</option>
+                        <option value="Non-Tunai">💳 QRIS / TRANSFER</option>
+                        <option value="Split">🌗 SPLIT (CAMPUR)</option>
+                    </select>
+                </div>
+                <div id="split-input-area" class="hidden flex justify-between items-center bg-slate-900/50 p-2 rounded-xl border border-white/5">
+                    <span class="text-[9px] text-sky-400 font-bold">NON-TUNAI (QRIS):</span>
+                    <input type="number" id="split-nontunai" placeholder="0" oninput="calculateSplit()" class="bg-transparent text-right text-[10px] font-black text-white outline-none w-24">
+                </div>
+                <div id="split-info-area" class="hidden text-[8px] text-right text-gray-500 font-bold">
+                    Sisa Tunai: <span id="split-tunai-label" class="text-amber-500 font-black">Rp 0</span>
+                </div>
             </div>
+
             <div class="flex justify-between items-end">
                 <h3 class="text-3xl font-black gold-text" id="grand-total">Rp 0</h3>
                 <button onclick="processCheckout()" class="btn-gold px-12 py-4 rounded-2xl font-black text-[10px] shadow-lg active:scale-95 transition-all uppercase tracking-widest">Checkout</button>
@@ -65,24 +70,42 @@
 
     <div id="expense-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
         <div class="absolute inset-0 bg-black/80" onclick="closeExpenseModal()"></div>
-        <div class="relative glass w-full max-w-sm rounded-[2rem] p-8">
+        <div class="relative glass bg-slate-900 border border-white/10 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
             <h2 class="text-xl font-black text-rose-500 mb-6 uppercase">Biaya Operasional</h2>
-            <input type="text" id="ex-desc" placeholder="Keterangan" class="w-full bg-slate-800 p-4 rounded-xl text-xs mb-4 outline-none">
-            <input type="number" id="ex-amount" placeholder="Nominal Rp" class="w-full bg-slate-800 p-4 rounded-xl text-xs mb-6 outline-none">
-            <button onclick="saveExpense()" class="w-full bg-rose-600 py-4 rounded-2xl font-black text-xs">SIMPAN</button>
+            <input type="text" id="ex-desc" placeholder="Keterangan" class="w-full bg-slate-800 p-4 rounded-xl text-[10px] mb-4 outline-none border border-white/5">
+            <input type="number" id="ex-amount" placeholder="Nominal Rp" class="w-full bg-slate-800 p-4 rounded-xl text-[10px] mb-6 outline-none border border-white/5">
+            <button onclick="saveExpense()" class="w-full bg-rose-600 py-4 rounded-2xl font-black text-xs uppercase">Simpan Biaya</button>
         </div>
     </div>
 
     <div id="closing-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
-        <div class="absolute inset-0 bg-black/80" onclick="closeClosingModal()"></div>
-        <div class="relative glass w-full max-w-sm rounded-[2rem] p-8">
-            <h2 class="text-xl font-black gold-text mb-6 uppercase text-center">Closing Store</h2>
-            <div class="space-y-4 mb-8 text-xs font-bold">
-                <div class="flex justify-between"><span>SALES</span><span id="modal-sales">Rp 0</span></div>
-                <div class="flex justify-between text-rose-400"><span>EXPENSE</span><span id="modal-expense">Rp 0</span></div>
-                <div class="flex justify-between text-emerald-400 border-t border-white/5 pt-4"><span>NET PROFIT</span><span id="modal-total">Rp 0</span></div>
+        <div class="absolute inset-0 bg-black/95" onclick="closeClosingModal()"></div>
+        <div class="relative glass bg-slate-900 border border-white/10 w-full max-w-md rounded-[2.5rem] p-8 flex flex-col max-h-[90vh] shadow-2xl">
+            <h2 class="text-xl font-black gold-text mb-6 uppercase text-center italic tracking-widest">Closing Store</h2>
+            <div class="overflow-y-auto no-scrollbar space-y-4 mb-6">
+                <div class="grid grid-cols-2 gap-2 text-[9px] font-bold uppercase">
+                    <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <p class="text-gray-500 mb-1">Total Tunai</p>
+                        <p id="modal-tunai" class="text-amber-500 text-xs">Rp 0</p>
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <p class="text-gray-500 mb-1">Total Non-Tunai</p>
+                        <p id="modal-nontunai" class="text-sky-400 text-xs">Rp 0</p>
+                    </div>
+                    <div class="bg-rose-500/10 p-3 rounded-2xl border border-rose-500/20">
+                        <p class="text-rose-400 mb-1">Pengeluaran</p>
+                        <p id="modal-expense" class="text-rose-500 text-xs">Rp 0</p>
+                    </div>
+                    <div class="bg-emerald-500/10 p-3 rounded-2xl border border-emerald-500/20">
+                        <p class="text-emerald-400 mb-1">Net Profit</p>
+                        <p id="modal-total" class="text-emerald-500 text-xs font-black">Rp 0</p>
+                    </div>
+                </div>
+                <div class="pt-4"><p class="text-[9px] text-gray-500 font-black uppercase mb-3 tracking-widest border-b border-white/5 pb-1">Detail Pemasukan:</p><div id="detail-sales-list" class="space-y-2"></div></div>
+                <div class="pt-4"><p class="text-[9px] text-gray-500 font-black uppercase mb-3 tracking-widest border-b border-white/5 pb-1">Detail Biaya:</p><div id="detail-expense-list" class="space-y-1"></div></div>
             </div>
-            <button id="btn-wa-closing" class="btn-gold w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Kirim WA</button>
+            <button id="btn-wa-closing" class="btn-gold w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest mb-2">Kirim WA</button>
+            <button onclick="closeClosingModal()" class="w-full py-2 text-[10px] font-bold text-gray-500 uppercase">Tutup</button>
         </div>
     </div>
 
@@ -94,17 +117,31 @@
 
         async function init() {
             try {
-                const resp = await fetch(API_URL + "?page=items");
+                const resp = await fetch(API_URL + "?page=items&_ts=" + Date.now());
                 allItems = await resp.json();
                 renderCategories();
             } catch (e) { showToast("Gagal muat data!"); }
+        }
+
+        function toggleSplitInput() {
+            const method = document.getElementById('pay-method').value;
+            document.getElementById('split-input-area').classList.toggle('hidden', method !== 'Split');
+            document.getElementById('split-info-area').classList.toggle('hidden', method !== 'Split');
+        }
+
+        function calculateSplit() {
+            const total = cart.reduce((s, i) => s + (i.harga * i.qty - i.diskon), 0);
+            const nt = parseInt(document.getElementById('split-nontunai').value) || 0;
+            const tunai = total - nt;
+            document.getElementById('split-tunai-label').innerText = "Rp " + tunai.toLocaleString();
+            return { tunai, nt };
         }
 
         function renderCategories() {
             viewState = { level: 'cat' }; updatePath("Menu Utama");
             const cats = [...new Set(allItems.map(i => i.kategori))];
             document.getElementById('grid-container').innerHTML = cats.map(c => `
-                <div onclick="selectCategory('${c}')" class="glass p-6 rounded-3xl text-center card-active">
+                <div onclick="selectCategory('${c}')" class="glass bg-slate-900 p-6 rounded-3xl text-center card-active border border-white/5 shadow-xl">
                     <div class="text-2xl mb-2">${getEmoji(c)}</div><div class="text-[10px] font-black uppercase">${c}</div>
                 </div>`).join('');
         }
@@ -114,10 +151,7 @@
             const subs = [...new Set(allItems.filter(i => i.kategori === cat && i.sub_kategori).map(i => i.sub_kategori))];
             if (subs.length > 0) {
                 viewState.level = 'sub'; updatePath(cat);
-                document.getElementById('grid-container').innerHTML = subs.map(s => `
-                    <div onclick="selectSub('${s}')" class="glass p-6 rounded-3xl text-center card-active border-l-4 border-amber-500">
-                        <div class="text-[10px] font-black uppercase text-amber-500">${s}</div>
-                    </div>`).join('');
+                document.getElementById('grid-container').innerHTML = subs.map(s => `<div onclick="selectSub('${s}')" class="glass bg-slate-900 p-6 rounded-3xl text-center card-active border-l-4 border-amber-500 shadow-xl"><div class="text-[10px] font-black uppercase text-amber-500">${s}</div></div>`).join('');
             } else { renderItems(cat, ''); }
         }
 
@@ -125,11 +159,9 @@
 
         function renderItems(cat, sub) {
             viewState.level = 'item'; updatePath(`${cat} > ${sub || 'All'}`);
-            // HILANGKAN STOK 0
-            const filtered = allItems.filter(i => i.kategori === cat && (!sub || i.sub_kategori === sub) && parseInt(i.stok) > 0);
+            const filtered = allItems.filter(i => i.kategori === cat && (!sub || i.sub_kategori === sub));
             document.getElementById('grid-container').innerHTML = filtered.map(i => `
-                <div onclick="addToCart('${i.nama}', ${i.harga}, ${i.stok}, '${i.merk}')" class="glass p-4 rounded-3xl card-active relative overflow-hidden">
-                    <div class="absolute top-2 right-2 bg-amber-500/10 text-amber-500 text-[7px] px-2 py-0.5 rounded-full font-bold">STOK: ${i.stok}</div>
+                <div onclick="addToCart('${i.nama}', ${i.harga})" class="glass bg-slate-900 p-4 rounded-3xl card-active relative border border-white/5 shadow-xl">
                     <p class="text-[8px] text-gray-500 font-black uppercase mt-2">${i.merk}</p>
                     <h4 class="text-[10px] font-bold truncate mb-2 leading-tight">${i.nama}</h4>
                     <p class="text-[10px] font-black gold-text">Rp ${parseInt(i.harga).toLocaleString()}</p>
@@ -139,62 +171,38 @@
         function handleSearch() {
             const q = document.getElementById('globalSearch').value.toLowerCase();
             if(!q) { renderCategories(); return; }
-            const filtered = allItems.filter(i => (i.nama.toLowerCase().includes(q) || i.merk.toLowerCase().includes(q)) && parseInt(i.stok) > 0);
+            const filtered = allItems.filter(i => i.nama.toLowerCase().includes(q) || i.merk.toLowerCase().includes(q));
             document.getElementById('grid-container').innerHTML = filtered.map(i => `
-                <div onclick="addToCart('${i.nama}', ${i.harga}, ${i.stok}, '${i.merk}')" class="glass p-4 rounded-3xl card-active relative">
-                    <div class="absolute top-2 right-2 bg-amber-500/10 text-amber-500 text-[7px] px-2 py-0.5 rounded-full font-bold">STOK: ${i.stok}</div>
+                <div onclick="addToCart('${i.nama}', ${i.harga})" class="glass bg-slate-900 p-4 rounded-3xl card-active border border-white/5">
                     <p class="text-[8px] text-gray-500 font-black uppercase mt-2">${i.merk}</p>
                     <h4 class="text-[10px] font-bold truncate mb-2">${i.nama}</h4>
                     <p class="text-[10px] font-black gold-text">Rp ${parseInt(i.harga).toLocaleString()}</p>
                 </div>`).join('');
         }
 
-        function addToCart(nama, harga, stok, merk) {
+        function addToCart(nama, harga) {
             const existing = cart.find(c => c.nama === nama);
-            if(existing) {
-                if(existing.qty >= stok) { showToast("⚠️ Melebihi stok!"); return; }
-                existing.qty++;
-            } else {
-                cart.push({ nama, harga, qty: 1, diskon: 0, stok_limit: stok });
-            }
+            if(existing) existing.qty++; else cart.push({ nama, harga, qty: 1, diskon: 0 });
             showToast("🛒 " + nama); updateCartUI();
         }
 
         function updateCartUI() {
             const list = document.getElementById('cart-list');
-            if(cart.length === 0) { list.innerHTML = `<p class="text-center text-gray-600 text-[10px] py-4">Kosong...</p>`; document.getElementById('grand-total').innerText = "Rp 0"; return; }
+            if(cart.length === 0) { list.innerHTML = `<p class="text-center text-gray-600 text-[10px] py-4 italic">Kosong...</p>`; document.getElementById('grand-total').innerText = "Rp 0"; return; }
             let total = 0;
             list.innerHTML = cart.map((item, index) => {
                 const nett = (item.harga * item.qty) - item.diskon; total += nett;
                 return `
-                <div class="glass p-3 rounded-2xl flex justify-between items-center text-[10px] mb-2 border border-white/5">
-                    <div class="w-1/2">
-                        <p class="font-bold uppercase truncate tracking-tighter">${item.nama}</p>
-                        <input type="number" onchange="applyItemDisc(${index}, this.value)" value="${item.diskon}" placeholder="Disc Rp" class="bg-transparent border-b border-rose-500/20 w-16 text-rose-400 text-[9px] outline-none mt-1">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center bg-slate-800 rounded-full px-2 py-1 gap-3">
-                            <button onclick="updateQty(${index}, -1)" class="w-5 h-5 flex items-center justify-center bg-slate-700 rounded-full text-white">-</button>
-                            <span class="font-black text-amber-500">${item.qty}</span>
-                            <button onclick="updateQty(${index}, 1)" class="w-5 h-5 flex items-center justify-center bg-slate-700 rounded-full text-white">+</button>
-                        </div>
-                        <p class="font-black w-14 text-right">Rp ${nett.toLocaleString()}</p>
-                    </div>
+                <div class="glass bg-slate-900/50 p-3 rounded-2xl flex justify-between items-center text-[10px] mb-2 border border-white/5">
+                    <div class="w-1/2"><p class="font-bold uppercase truncate">${item.nama}</p><input type="number" onchange="applyItemDisc(${index}, this.value)" value="${item.diskon}" placeholder="Disc Rp" class="bg-transparent border-b border-rose-500/20 w-16 text-rose-400 text-[9px] outline-none mt-1"></div>
+                    <div class="flex items-center gap-3"><div class="flex items-center bg-slate-800 rounded-full px-2 py-1 gap-3"><button onclick="updateQty(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 rounded-full text-white">-</button><span class="font-black text-amber-500">${item.qty}</span><button onclick="updateQty(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-slate-700 rounded-full text-white">+</button></div><p class="font-black w-14 text-right">Rp ${nett.toLocaleString()}</p></div>
                 </div>`;
             }).join('');
             document.getElementById('grand-total').innerText = "Rp " + total.toLocaleString();
+            if(document.getElementById('pay-method').value === 'Split') calculateSplit();
         }
 
-        function updateQty(i, change) {
-            const item = cart[i];
-            if (change > 0 && item.qty >= item.stok_limit) {
-                showToast("⚠️ Stok cuma " + item.stok_limit);
-                return;
-            }
-            item.qty += change;
-            if (item.qty <= 0) cart.splice(i, 1);
-            updateCartUI();
-        }
+        function updateQty(i, change) { cart[i].qty += change; if (cart[i].qty <= 0) cart.splice(i, 1); updateCartUI(); }
 
         async function processCheckout() {
             if(cart.length === 0) return;
@@ -202,23 +210,70 @@
             const disc = cart.reduce((s, i) => s + i.diskon, 0);
             const itemsStr = cart.map(i => `${i.nama} (${i.qty})`).join(", ");
             const method = document.getElementById('pay-method').value;
-            const soldItems = cart.map(i => ({ nama: i.nama, qty: i.qty }));
 
-            const d = new Date();
-            const tglFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}.${d.getMinutes().toString().padStart(2,'0')}`;
+            let tFinal = 0, ntFinal = 0;
+            if(method === 'Tunai') tFinal = total;
+            else if(method === 'Non-Tunai') ntFinal = total;
+            else { const s = calculateSplit(); tFinal = s.tunai; ntFinal = s.nt; }
+
+            const d = new Date(), tglFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}.${d.getMinutes().toString().padStart(2,'0')}`;
 
             showToast("⌛ Menyimpan...");
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'penjualan', action: 'SALE', data: [Date.now(), tglFormatted, itemsStr, total+disc, disc, total, method], soldItems: soldItems }) });
-                const res = await r.json();
-                if(res.status === 'ok') { showToast("✅ SUKSES!"); clearCart(); init(); }
-                else { showToast("Gagal!"); }
-            } catch (e) { showToast("Error!"); }
+                const payload = { target: 'penjualan', data: [Date.now(), tglFormatted, itemsStr, total+disc, disc, total, method, tFinal, ntFinal] };
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                showToast("✅ SUKSES!"); clearCart();
+            } catch (e) { showToast("Gagal!"); }
         }
 
+        async function saveExpense() {
+            const desc = document.getElementById('ex-desc').value, amount = document.getElementById('ex-amount').value;
+            if(!desc || !amount) return showToast("Isi data!");
+            const d = new Date(), tgl = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}.${d.getMinutes().toString().padStart(2,'0')}`;
+            showToast("⏳ Menyimpan...");
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ target: 'pengeluaran', data: [Date.now(), tgl, desc, amount] }) });
+                showToast("✅ Sukses!"); closeExpenseModal();
+                document.getElementById('ex-desc').value = ''; document.getElementById('ex-amount').value = '';
+            } catch (e) { showToast("Gagal!"); }
+        }
+
+        async function showClosing() {
+            showToast("⏳ Menghitung...");
+            try {
+                const [respP, respE] = await Promise.all([fetch(API_URL + "?page=penjualan&_ts=" + Date.now()), fetch(API_URL + "?page=pengeluaran&_ts=" + Date.now())]);
+                const sales = await respP.json(), expenses = await respE.json(), d = new Date(), todayStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+                const filteredSales = sales.filter(s => s.tanggal.startsWith(todayStr)), filteredEx = expenses.filter(e => e.tanggal.startsWith(todayStr));
+                const tTunai = filteredSales.reduce((sum, s) => sum + (parseInt(s.tunai) || 0), 0), tNTunai = filteredSales.reduce((sum, s) => sum + (parseInt(s.nontunai) || 0), 0);
+                const tSales = tTunai + tNTunai, tExp = filteredEx.reduce((sum, e) => sum + (parseInt(e.jumlah) || 0), 0);
+
+                document.getElementById('modal-tunai').innerText = "Rp " + tTunai.toLocaleString();
+                document.getElementById('modal-nontunai').innerText = "Rp " + tNTunai.toLocaleString();
+                document.getElementById('modal-expense').innerText = "- Rp " + tExp.toLocaleString();
+                document.getElementById('modal-total').innerText = "Rp " + (tSales - tExp).toLocaleString();
+
+                const salesList = document.getElementById('detail-sales-list'); salesList.innerHTML = '';
+                filteredSales.forEach(s => {
+                    salesList.innerHTML += `<div class="bg-white/5 p-2 rounded-xl border border-white/5 text-[9px] mb-2"><div class="flex justify-between font-black gold-text mb-1"><span>${s.metode}</span><span>Rp ${parseInt(s.total_akhir).toLocaleString()}</span></div><div class="text-gray-400">• ${s.items}</div></div>`;
+                });
+                const expenseList = document.getElementById('detail-expense-list'); expenseList.innerHTML = '';
+                filteredEx.forEach(e => {
+                    expenseList.innerHTML += `<div class="flex justify-between border-b border-white/5 pb-1 text-[9px]"><span class="text-gray-300">• ${e.keperluan || e.keterangan || "Biaya"}</span><span class="text-rose-400">Rp ${parseInt(e.jumlah).toLocaleString()}</span></div>`;
+                });
+
+                let waText = `*CLOSING MALTA VAPE*\nTanggal: ${todayStr}\n---\n*SALES:* Rp ${tSales.toLocaleString()}\n- Tunai: Rp ${tTunai.toLocaleString()}\n- Non-Tunai: Rp ${tNTunai.toLocaleString()}\n\n*BIAYA:* Rp ${tExp.toLocaleString()}\n*NET PROFIT: Rp ${(tSales-tExp).toLocaleString()}*\n\n*DETAIL:*`;
+                filteredSales.forEach(s => waText += `\n[${s.metode}] ${s.items} (Rp ${parseInt(s.total_akhir).toLocaleString()})`);
+                document.getElementById('btn-wa-closing').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`);
+                document.getElementById('closing-modal').classList.remove('hidden');
+            } catch (e) { showToast("Gagal!"); }
+        }
+
+        function closeClosingModal() { document.getElementById('closing-modal').classList.add('hidden'); }
+        function openExpenseModal() { document.getElementById('expense-modal').classList.remove('hidden'); }
+        function closeExpenseModal() { document.getElementById('expense-modal').classList.add('hidden'); }
         function applyItemDisc(i, v) { cart[i].diskon = parseInt(v) || 0; updateCartUI(); }
         function clearCart() { cart = []; updateCartUI(); }
-        function showToast(m) { const b = document.getElementById('toast-box'), e = document.createElement('div'); e.className = 'glass border-l-4 border-amber-500 p-4 rounded-xl mb-2 animate-slide-in shadow-2xl'; e.innerHTML = `<span class="text-[9px] font-black uppercase tracking-widest">${m}</span>`; b.appendChild(e); setTimeout(()=>e.remove(), 2500); }
+        function showToast(m) { const b = document.getElementById('toast-box'), e = document.createElement('div'); e.className = 'glass bg-slate-900 border-l-4 border-amber-500 p-4 rounded-xl mb-2 animate-slide-in shadow-2xl'; e.innerHTML = `<span class="text-[9px] font-black uppercase text-white">${m}</span>`; b.appendChild(e); setTimeout(()=>e.remove(), 2500); }
         function updatePath(t) { document.getElementById('path-status').innerText = t; }
         function getEmoji(c) { return {'POD':'📦','MOD':'🔋','LIQUID':'💧','CARTRIDGE':'🔌','OTHER':'🛠️'}[c] || '✨'; }
         window.onload = init;

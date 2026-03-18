@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="icon" type="image/png" href="https://i.imgur.com/h3D0nVP.png">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/h3D0nVP.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#fbbf24">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Malta Vape - Dashboard</title>
@@ -20,7 +14,7 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #64748b; text-decoration: none; }
         .nav-item.active { color: #fbbf24; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-        #items-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
+        #audit-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(2, 6, 23, 0.98); padding: 20px; flex-direction: column; }
     </style>
 </head>
 <body class="pb-32">
@@ -29,90 +23,84 @@
         <div class="flex justify-between items-center mb-6 mt-2">
             <div>
                 <h2 class="text-2xl font-extrabold tracking-tight italic">MALTA <span class="gold-text">VAPE</span></h2>
-                <input type="date" id="date-filter" onchange="loadHomeData()" class="bg-transparent text-amber-500 font-bold text-[10px] uppercase tracking-widest outline-none border-none">
+                <input type="date" id="date-filter" onchange="loadHomeData()" class="bg-transparent text-amber-500 font-bold text-[11px] uppercase outline-none">
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl shadow-lg">👑</div>
+            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-amber-500/20 flex items-center justify-center text-xl">👑</div>
         </div>
 
-        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-900/20 p-8 rounded-[2.5rem] border border-amber-500/20 mb-6 relative overflow-hidden shadow-2xl">
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
-            <p class="text-gray-400 text-[9px] uppercase font-black tracking-widest mb-1">Total Omzet</p>
-            <h3 class="text-4xl font-black gold-text tracking-tighter" id="omzet-tampil">Rp 0</h3>
-            <div class="flex gap-4 mt-6 pt-4 border-t border-white/5">
-                <div class="flex-1">
-                    <p class="text-gray-500 text-[8px] font-bold uppercase mb-1 tracking-widest">Pengeluaran</p>
-                    <p id="total-keluar" class="text-rose-400 font-black text-sm">Rp 0</p>
+        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-900/20 p-8 rounded-[2.5rem] border border-amber-500/20 mb-6 relative overflow-hidden shadow-2xl text-center">
+            <p class="text-gray-400 text-[9px] uppercase font-black tracking-widest mb-1">Net Bersih Hari Ini</p>
+            <h3 class="text-4xl font-black gold-text tracking-tighter mb-8" id="total-net">Rp 0</h3>
+
+            <div class="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
+                <div class="text-left border-r border-white/5">
+                    <p class="text-gray-500 text-[8px] font-bold uppercase mb-1">Pengeluaran</p>
+                    <p id="total-keluar" class="text-rose-500 font-black text-sm">Rp 0</p>
                 </div>
-                <div class="flex-1">
-                    <p class="text-gray-500 text-[8px] font-bold uppercase mb-1 tracking-widest">Net Saldo</p>
-                    <p id="total-net" class="text-emerald-400 font-black text-sm">Rp 0</p>
+                <div class="text-right">
+                    <p class="text-gray-500 text-[8px] font-bold uppercase mb-1">Pemasukan</p>
+                    <p id="omzet-tampil" class="text-sky-400 font-black text-sm">Rp 0</p>
                 </div>
             </div>
         </div>
 
-        <button onclick="openItemsModal()" class="w-full py-5 mb-8 bg-amber-500/10 border border-amber-500/20 rounded-[2rem] text-amber-500 font-black text-[10px] uppercase tracking-[0.2em] active:scale-95 transition-all">
-            📦 Barang Keluar Hari Ini
+        <div class="grid grid-cols-2 gap-3 mb-8">
+            <div class="glass p-4 rounded-3xl text-center border-l-4 border-amber-500">
+                <p class="text-[8px] text-gray-500 font-black uppercase">💰 Tunai</p>
+                <h4 id="income-tunai" class="text-xs font-black text-white">Rp 0</h4>
+            </div>
+            <div class="glass p-4 rounded-3xl text-center border-l-4 border-sky-500">
+                <p class="text-[8px] text-gray-500 font-black uppercase">💳 Non-Tunai</p>
+                <h4 id="income-nontunai" class="text-xs font-black text-white">Rp 0</h4>
+            </div>
+        </div>
+
+        <button onclick="openAuditModal()" class="w-full py-5 mb-8 glass rounded-[2rem] text-amber-500 font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
+            📊 Income / Outcome Detail
         </button>
 
         <div class="grid grid-cols-2 gap-4 mb-8">
-            <a href="grafik.html" class="glass p-6 rounded-[2rem] flex flex-col items-center">
-                <div class="text-2xl mb-2">📈</div>
-                <p class="font-bold text-[10px] uppercase">Analisa</p>
-            </a>
-            <a href="inventory.html" class="glass p-6 rounded-[2rem] flex flex-col items-center relative">
-                <div id="low-stock-count" class="absolute -top-1 -right-1 bg-rose-600 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-slate-900 hidden">0</div>
-                <div class="text-2xl mb-2">📦</div>
-                <p class="font-bold text-[10px] uppercase">Stok</p>
-            </a>
+            <a href="grafik.html" class="glass p-6 rounded-[2rem] flex flex-col items-center"><div class="text-2xl mb-2">📈</div><p class="font-bold text-[10px] uppercase text-gray-400">Analisa</p></a>
+            <a href="inventory.html" class="glass p-6 rounded-[2rem] flex flex-col items-center"><div class="text-2xl mb-2">📦</div><p class="font-bold text-[10px] uppercase text-gray-400">Daftar Menu</p></a>
         </div>
 
         <div class="glass p-6 rounded-[2.5rem]">
-            <h4 class="font-black text-[9px] uppercase text-gray-500 tracking-widest mb-6 flex justify-between">
-                Aktivitas Terakhir <span class="text-amber-500 animate-pulse">● LIVE</span>
-            </h4>
-            <div class="space-y-5" id="recent-activity">
-                <div class="text-center py-4 text-[10px] text-gray-600 italic">Syncing...</div>
-            </div>
+            <h4 class="font-black text-[9px] uppercase text-gray-500 tracking-widest mb-6 flex justify-between">Aktivitas <span class="text-amber-500 animate-pulse">● Live Audit</span></h4>
+            <div class="space-y-6" id="recent-activity"></div>
         </div>
     </main>
 
-    <div id="items-modal" class="flex flex-col p-6 overflow-hidden">
-        <div class="flex justify-between items-center mb-8 mt-4">
-            <h2 class="text-xl font-black gold-text uppercase italic">Laporan Barang</h2>
-            <button onclick="closeItemsModal()" class="w-12 h-12 glass rounded-full flex items-center justify-center text-xl shadow-xl">✕</button>
+    <div id="audit-modal">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-xl font-black gold-text uppercase">Audit List</h2>
+            <button onclick="closeAuditModal()" class="w-10 h-10 glass rounded-full flex items-center justify-center">✕</button>
         </div>
-        <div id="items-report-list" class="space-y-4 overflow-y-auto pb-20 no-scrollbar"></div>
+        <div class="flex gap-4 mb-6 border-b border-white/5">
+            <button onclick="switchTab('income')" id="tab-in-btn" class="flex-1 py-3 text-[10px] font-black uppercase text-sky-400 border-b-2 border-sky-400">Income</button>
+            <button onclick="switchTab('outcome')" id="tab-out-btn" class="flex-1 py-3 text-[10px] font-black uppercase text-gray-500">Outcome</button>
+        </div>
+        <div id="income-list" class="flex-1 overflow-y-auto space-y-3"></div>
+        <div id="outcome-list" class="hidden flex-1 overflow-y-auto space-y-3"></div>
     </div>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item active">
-            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            <span class="font-bold">Beranda</span>
-        </a>
-        <a href="kasir.html" class="nav-item">
-            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-            <span class="font-bold">Kasir</span>
-        </a>
-        <a href="inventory.html" class="nav-item">
-            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M20 13H4v-2h16v2M7 19h10v-2H7v2M3 5v2h18V5H3z"/></svg>
-            <span class="font-bold">Item</span>
-        </a>
-        <a href="absensi.html" class="nav-item">
-            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm.5 13H11v-6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-            <span class="font-bold">Absen</span>
-        </a>
+        <a href="index.html" class="nav-item active"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Beranda</span></a>
+        <a href="kasir.html" class="nav-item"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span>Kasir</span></a>
+        <a href="inventory.html" class="nav-item"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M20 13H4v-2h16v2M7 19h10v-2H7v2M3 5v2h18V5H3z"/></svg><span>Item</span></a>
+        <a href="absensi.html" class="nav-item"><svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm.5 13H11v-6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>Absen</span></a>
     </nav>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzVgkW4y0ke_7AFPiALhnoMN577ixX2eZSaxmucn-amXbRUoZ3xi4hSZZ54vmT6abEm/exec";
-        let masterItems = [], currentSales = [];
+        let masterItems = [], currentSales = [], currentEx = [];
 
-        // Logika Ambil Data dengan Cache Buster
+        function normalizeDate(str) {
+            if(!str) return "";
+            return str.split(' ')[0].split('/').map(p => parseInt(p)).join('/');
+        }
+
         async function loadHomeData() {
-            const filterDate = document.getElementById('date-filter').value;
-            const targetTgl = filterDate.split('-').reverse().map(num => parseInt(num)).join('/');
-            
-            // Tambahin Timestamp biar Google gak ngasih data lama (Cache Buster)
+            const targetTgl = document.getElementById('date-filter').value.split('-').reverse().map(n => parseInt(n)).join('/');
             const timestamp = `&_ts=${Date.now()}`;
 
             try {
@@ -124,89 +112,71 @@
 
                 currentSales = await pResp.json();
                 masterItems = await iResp.json();
-                const expenses = await exResp.json();
+                currentEx = await exResp.json();
 
-                const filteredSales = currentSales.filter(s => s.tanggal.includes(targetTgl));
-                const totalOmzet = filteredSales.reduce((sum, s) => sum + (parseInt(s.total_akhir) || 0), 0);
-                const filteredEx = expenses.filter(e => e.tanggal.includes(targetTgl));
-                const totalKeluar = filteredEx.reduce((sum, e) => sum + (parseInt(e.jumlah) || 0), 0);
+                const filteredSales = currentSales.filter(s => normalizeDate(s.tanggal) === targetTgl);
+                const filteredEx = currentEx.filter(e => normalizeDate(e.tanggal) === targetTgl);
 
-                document.getElementById('omzet-tampil').innerText = "Rp " + totalOmzet.toLocaleString();
-                document.getElementById('total-keluar').innerText = "Rp " + totalKeluar.toLocaleString();
-                document.getElementById('total-net').innerText = "Rp " + (totalOmzet - totalKeluar).toLocaleString();
+                let cash = 0, non = 0;
+                filteredSales.forEach(s => {
+                    cash += parseInt(s.tunai || 0);
+                    non += parseInt(s.nontunai || 0);
+                });
 
-                const low = masterItems.filter(i => parseInt(i.stok) < 5);
-                const badge = document.getElementById('low-stock-count');
-                if(low.length > 0) { badge.innerText = low.length; badge.classList.remove('hidden'); }
-                else { badge.classList.add('hidden'); }
+                const omzet = cash + non;
+                const keluar = filteredEx.reduce((sum, e) => sum + (parseInt(e.jumlah) || 0), 0);
+
+                document.getElementById('total-net').innerText = "Rp " + (omzet - keluar).toLocaleString();
+                document.getElementById('total-keluar').innerText = "Rp " + keluar.toLocaleString();
+                document.getElementById('omzet-tampil').innerText = "Rp " + omzet.toLocaleString();
+                document.getElementById('income-tunai').innerText = "Rp " + cash.toLocaleString();
+                document.getElementById('income-nontunai').innerText = "Rp " + non.toLocaleString();
 
                 const actContainer = document.getElementById('recent-activity');
                 actContainer.innerHTML = '';
-                filteredSales.slice(-5).reverse().forEach(s => {
-                    const timePart = s.tanggal.includes(' ') ? s.tanggal.split(' ')[1] : "--:--";
+                const combined = [
+                    ...filteredSales.map(s => ({...s, type:'IN', label: s.items, amount: s.total_akhir, sub: s.metode})),
+                    ...filteredEx.map(e => ({...e, type:'OUT', label: e.keperluan || e.keterangan || "Biaya", amount: e.jumlah, sub: "OUT"}))
+                ].sort((a,b) => (b.id_transaksi || b.id || 0) - (a.id_transaksi || a.id || 0)).slice(0, 10);
+
+                combined.forEach(item => {
+                    const time = item.tanggal.includes(' ') ? item.tanggal.split(' ')[1] : "--:--";
+                    const isOut = item.type === 'OUT';
                     actContainer.innerHTML += `
-                        <div class="flex items-center justify-between border-b border-white/5 pb-4">
-                            <div class="w-2/3">
-                                <p class="text-[10px] font-bold truncate">${s.items}</p>
-                                <p class="text-[8px] text-gray-500 uppercase font-black">${timePart} • ${s.metode_bayar}</p>
-                            </div>
-                            <p class="text-[10px] font-black text-emerald-500">+Rp ${(s.total_akhir/1000).toFixed(0)}k</p>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+                            <div class="w-2/3"><p class="text-[10px] font-bold truncate uppercase ${isOut ? 'text-rose-300' : 'text-gray-200'}">${item.label}</p><p class="text-[8px] text-gray-500 font-black uppercase">${time} • ${item.sub}</p></div>
+                            <p class="text-[10px] font-black ${isOut ? 'text-rose-500' : 'text-sky-400'}">${isOut ? '-' : '+'}Rp ${(parseInt(item.amount)/1000).toFixed(0)}k</p>
                         </div>`;
                 });
             } catch (e) { console.error(e); }
         }
 
-        function openItemsModal() {
-            document.getElementById('items-modal').style.display = 'flex';
-            const filterDate = document.getElementById('date-filter').value;
-            const targetTgl = filterDate.split('-').reverse().map(num => parseInt(num)).join('/');
-            const filteredSales = currentSales.filter(s => s.tanggal.includes(targetTgl));
-            const listContainer = document.getElementById('items-report-list');
-            listContainer.innerHTML = '';
+        function openAuditModal() { document.getElementById('audit-modal').style.display = 'flex'; renderAuditLists(); }
+        function closeAuditModal() { document.getElementById('audit-modal').style.display = 'none'; }
+        function switchTab(t) {
+            document.getElementById('income-list').classList.toggle('hidden', t !== 'income');
+            document.getElementById('outcome-list').classList.toggle('hidden', t !== 'outcome');
+            document.getElementById('tab-in-btn').className = t === 'income' ? 'flex-1 py-3 text-[10px] font-black uppercase text-sky-400 border-b-2 border-sky-400' : 'flex-1 py-3 text-[10px] font-black uppercase text-gray-500';
+            document.getElementById('tab-out-btn').className = t === 'outcome' ? 'flex-1 py-3 text-[10px] font-black uppercase text-rose-400 border-b-2 border-rose-400' : 'flex-1 py-3 text-[10px] font-black uppercase text-gray-500';
+        }
 
-            if(filteredSales.length === 0) {
-                listContainer.innerHTML = '<div class="text-center py-20 opacity-20 italic text-[10px]">No sales recorded</div>';
-                return;
-            }
-
-            filteredSales.forEach(s => {
-                const itemArray = s.items.split(', ');
-                itemArray.forEach(entry => {
-                    const match = entry.match(/(.+) \((\d+)\)/);
-                    if(match) {
-                        const nama = match[1];
-                        const qty = match[2];
-                        const info = masterItems.find(i => i.nama === nama) || {};
-                        listContainer.innerHTML += `
-                            <div class="glass p-6 rounded-[2rem] border-l-4 border-amber-500">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div class="w-3/4">
-                                        <p class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">${info.merk || 'No Brand'} • ${info.kategori || 'N/A'}</p>
-                                        <h4 class="text-[11px] font-black leading-tight">${nama}</h4>
-                                    </div>
-                                    <div class="text-right"><p class="text-[10px] font-black gold-text">${qty} Pcs</p></div>
-                                </div>
-                                <div class="flex justify-between items-center pt-3 border-t border-white/5">
-                                    <p class="text-[9px] text-gray-400 font-bold">Price: Rp ${parseInt(info.harga || 0).toLocaleString()}</p>
-                                    <p class="text-[9px] text-rose-400 font-bold">Disc: Rp ${parseInt(s.total_diskon || 0).toLocaleString()}</p>
-                                </div>
-                            </div>`;
-                    }
-                });
+        function renderAuditLists() {
+            const targetTgl = document.getElementById('date-filter').value.split('-').reverse().map(n => parseInt(n)).join('/');
+            const inCont = document.getElementById('income-list'); inCont.innerHTML = '';
+            currentSales.filter(s => normalizeDate(s.tanggal) === targetTgl).forEach(s => {
+                inCont.innerHTML += `<div class="glass p-4 rounded-3xl border-l-4 border-sky-500 mb-2 flex justify-between items-center"><span class="text-[10px] font-bold uppercase truncate w-2/3">${s.items}</span><span class="font-black text-xs">Rp ${parseInt(s.total_akhir).toLocaleString()}</span></div>`;
+            });
+            const outCont = document.getElementById('outcome-list'); outCont.innerHTML = '';
+            currentEx.filter(e => normalizeDate(e.tanggal) === targetTgl).forEach(e => {
+                outCont.innerHTML += `<div class="glass p-4 rounded-3xl border-l-4 border-rose-500 mb-2 flex justify-between items-center"><span class="text-[10px] font-bold uppercase truncate w-2/3">${e.keperluan || "Biaya"}</span><span class="text-rose-500 font-black text-xs">Rp ${parseInt(e.jumlah).toLocaleString()}</span></div>`;
             });
         }
 
-        function closeItemsModal() { document.getElementById('items-modal').style.display = 'none'; }
-
-        // RITUAL PENTING: Force Refresh pas halaman muncul lagi (Back Button)
-        window.addEventListener('pageshow', function(event) {
-            const now = new Date();
-            const offset = now.getTimezoneOffset() * 60000;
+        window.addEventListener('pageshow', () => {
+            const now = new Date(), offset = now.getTimezoneOffset() * 60000;
             document.getElementById('date-filter').value = new Date(now - offset).toISOString().split('T')[0];
-            loadHomeData(); // Panggil fungsi ambil data tiap kali halaman muncul
+            loadHomeData();
         });
-
-        window.onload = loadHomeData;
     </script>
 </body>
 </html>
